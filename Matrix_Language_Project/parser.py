@@ -54,8 +54,7 @@ def p_assignement_evolution(p):
                    | assignable ADD_ASSIGN operation
                    | assignable SUB_ASSIGN operation
                    | assignable MULT_ASSIGN operation
-                   | assignable DIV_ASSIGN operation
-                   | assignable ASSIGN STRING'''
+                   | assignable DIV_ASSIGN operation'''
 
 def p_assignable_evolution(p):
     '''assignable : ID 
