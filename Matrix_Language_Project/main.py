@@ -3,9 +3,10 @@ import scanner
 
 if __name__ == '__main__':
 
+    lexer = scanner.lexer
+
     file = open(sys.argv[1], 'r')
     text = file.read()
-    lexer = scanner.lexer  
     lexer.input(text) 
 
     while True:
