@@ -25,7 +25,7 @@ def p_expression_evloution(p):
 
 def p_action_evolution(p):
     '''action : assignement
-              | PRINT sequence
+              | PRINT printable_sequence
               | CONTINUE
               | BREAK
               | RETURN operation'''
@@ -59,7 +59,7 @@ def p_assignement_evolution(p):
 
 def p_assignable_evolution(p):
     '''assignable : ID 
-                  | ID SQ_BRACKET sequence CLOSE_SQ_BRACKET'''
+                  | ID SQ_BRACKET indexing_sequence CLOSE_SQ_BRACKET'''
 
 def p_operation_evolution(p):
     '''operation : term
@@ -91,12 +91,22 @@ def p_list_evolution(p):
             | SQ_BRACKET list CLOSE_SQ_BRACKET'''
 
 def p_inner_list_evolution(p):
-    '''inner_list : SQ_BRACKET sequence CLOSE_SQ_BRACKET
+    '''inner_list : SQ_BRACKET array_sequence CLOSE_SQ_BRACKET
                   | list COMA inner_list'''
 
-def p_sequence_evolution(p):
-    '''sequence : term
-                | sequence COMA term'''
+def p_array_sequence_evolution(p):
+    '''array_sequence : INTEGER
+                      | FLOAT
+                      | array_sequence COMA INTEGER
+                      | array_sequence COMA FLOAT'''
+
+def p_indexing_sequence_evolution(p):
+    '''indexing_sequence : INTEGER
+                         | indexing_sequence COMA INTEGER'''
+
+def p_printable_sequence_evolution(p):
+    '''printable_sequence : term
+                          | printable_sequence COMA term'''
 
 def p_condition_evolution(p):
     '''condition : BRACKET condition CLOSE_BRACKET
