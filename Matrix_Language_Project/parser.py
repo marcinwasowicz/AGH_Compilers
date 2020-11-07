@@ -11,6 +11,7 @@ precedence = (
     ("left", 'ARR_MULT', 'ARR_DIV')
 )
 
+
 def p_general_expression(p):
     '''ex : BRACKET ex CLOSE_BRACKET
           | CURL_BRACKET ex CLOSE_CURL_BRACKET'''
@@ -50,15 +51,20 @@ def p_for_looping_evolution(p):
     '''for_looping : FOR ID ASSIGN operation RANGE operation ex'''
 
 def p_assignement_evolution(p):
-    '''assignement : assignable ASSIGN operation
-                   | assignable ADD_ASSIGN operation
-                   | assignable SUB_ASSIGN operation
-                   | assignable MULT_ASSIGN operation
-                   | assignable DIV_ASSIGN operation'''
+    '''assignement : ID ASSIGN operation
+                   | ID ADD_ASSIGN operation
+                   | ID SUB_ASSIGN operation
+                   | ID MULT_ASSIGN operation
+                   | ID DIV_ASSIGN operation
+                   | ID ASSIGN STRING
+                   | matrix_element ASSIGN operation
+                   | matrix_element ADD_ASSIGN operation
+                   | matrix_element SUB_ASSIGN operation
+                   | matrix_element MULT_ASSIGN operation
+                   | matrix_element DIV_ASSIGN operation'''
 
 def p_assignable_evolution(p):
-    '''assignable : ID 
-                  | ID SQ_BRACKET indexing_sequence CLOSE_SQ_BRACKET'''
+    '''matrix_element : ID SQ_BRACKET indexing_sequence CLOSE_SQ_BRACKET'''
 
 def p_operation_evolution(p):
     '''operation : term
@@ -73,8 +79,25 @@ def p_operation_evolution(p):
                  | operation DIV operation
                  | operation MULT operation'''
 
+def p_numeric_operation_evolution(p):
+    '''numeric_operation : numeric_term
+                         | BRACKET numeric_operation CLOSE_BRACKET
+                         | numeric_operation ADD numeric_operation
+                         | numeric_operation SUB numeric_operation
+                         | numeric_operation DIV numeric_operation
+                         | numeric_operation MULT numeric_operation'''
+
+def p_numeric_term(p):
+    '''numeric_term : ID
+                    | matrix_element
+                    | INTEGER
+                    | FLOAT
+                    | BRACKET numeric_term CLOSE_BRACKET
+                    | SUB term %prec UNARY_SUB'''
+
 def p_term_evolution(p):
-    '''term : assignable
+    '''term : ID
+            | matrix_element
             | BRACKET term CLOSE_BRACKET
             | ZEROS BRACKET INTEGER CLOSE_BRACKET
             | EYE BRACKET INTEGER CLOSE_BRACKET
@@ -82,7 +105,6 @@ def p_term_evolution(p):
             | SUB term %prec UNARY_SUB
             | INTEGER
             | FLOAT
-            | STRING
             | list'''
 
 def p_list_evolution(p):
@@ -105,16 +127,18 @@ def p_indexing_sequence_evolution(p):
 
 def p_printable_sequence_evolution(p):
     '''printable_sequence : term
-                          | printable_sequence COMA term'''
+                          | STRING
+                          | printable_sequence COMA term
+                          | printable_sequence COMA STRING'''
 
 def p_condition_evolution(p):
     '''condition : BRACKET condition CLOSE_BRACKET
                  | BRACKET operation EQ operation CLOSE_BRACKET
                  | BRACKET operation NEQ operation CLOSE_BRACKET
-                 | BRACKET operation LS operation CLOSE_BRACKET
-                 | BRACKET operation GR operation CLOSE_BRACKET
-                 | BRACKET operation LQ operation CLOSE_BRACKET
-                 | BRACKET operation GQ operation CLOSE_BRACKET'''
+                 | BRACKET numeric_operation LS numeric_operation CLOSE_BRACKET
+                 | BRACKET numeric_operation GR numeric_operation CLOSE_BRACKET
+                 | BRACKET numeric_operation LQ numeric_operation CLOSE_BRACKET
+                 | BRACKET numeric_operation GQ numeric_operation CLOSE_BRACKET'''
 
 def p_error(p):
     if p:
