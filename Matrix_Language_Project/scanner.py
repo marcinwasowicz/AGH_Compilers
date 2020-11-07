@@ -110,7 +110,7 @@ def t_FLOAT(t):
     return t
 
 def t_INTEGER(t):
-    r'[1-9][0-9]*'
+    r'(0)|[1-9][0-9]*'
     return t
 
 def t_TRANSPOSE(t):
