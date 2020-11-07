@@ -24,12 +24,11 @@ def p_expression_evloution(p):
           | looping'''
 
 def p_action_evolution(p):
-    '''action : numeric_assignement
-              | matrix_assignement
-              | PRINT printable_sequence
+    '''action : assignement
+              | PRINT sequence
               | CONTINUE
               | BREAK
-              | RETURN returnable_statement'''
+              | RETURN operation'''
 
 def p_ifstatement_evolution(p):
     '''ifstatement : IF condition ex
@@ -48,58 +47,44 @@ def p_while_looping_evolution(p):
     '''while_looping : WHILE condition ex'''
 
 def p_for_looping_evolution(p):
-    '''for_looping : FOR ID ASSIGN numeric_operation RANGE numeric_operation ex'''
+    '''for_looping : FOR ID ASSIGN operation RANGE operation ex'''
 
-def p_matrix_assignement_evolution(p):
-    '''matrix_assignement : ID ASSIGN matrix_operation'''
+def p_assignement_evolution(p):
+    '''assignement : assignable ASSIGN operation
+                   | assignable ADD_ASSIGN operation
+                   | assignable SUB_ASSIGN operation
+                   | assignable MULT_ASSIGN operation
+                   | assignable DIV_ASSIGN operation
+                   | assignable ASSIGN STRING'''
 
-def p_numeric_assignement_evolution(p):
-    '''numeric_assignement : ID ASSIGN numeric_operation
-                           | ID ADD_ASSIGN numeric_operation
-                           | ID SUB_ASSIGN numeric_operation
-                           | ID MULT_ASSIGN numeric_operation
-                           | ID DIV_ASSIGN numeric_operation
-                           | matrix_element ASSIGN numeric_operation
-                           | matrix_element ADD_ASSIGN numeric_operation
-                           | matrix_element SUB_ASSIGN numeric_operation
-                           | matrix_element MULT_ASSIGN numeric_operation
-                           | matrix_element DIV_ASSIGN numeric_operation'''
+def p_assignable_evolution(p):
+    '''assignable : ID 
+                  | ID SQ_BRACKET sequence CLOSE_SQ_BRACKET'''
 
-def p_matrix_operation_evolution(p):
-    '''matrix_operation : matrix_term
-                        | matrix_operation TRANSPOSE
-                        | BRACKET matrix_operation CLOSE_BRACKET
-                        | matrix_operation ARR_ADD matrix_operation
-                        | matrix_operation ARR_SUB matrix_operation
-                        | matrix_operation ARR_MULT matrix_operation
-                        | matrix_operation ARR_DIV matrix_operation'''
+def p_operation_evolution(p):
+    '''operation : term
+                 | operation TRANSPOSE
+                 | BRACKET operation CLOSE_BRACKET
+                 | operation ARR_ADD operation
+                 | operation ARR_SUB operation
+                 | operation ARR_MULT operation
+                 | operation ARR_DIV operation
+                 | operation ADD operation
+                 | operation SUB operation
+                 | operation DIV operation
+                 | operation MULT operation'''
 
-def p_numeric_operation_evolution(p):
-    '''numeric_operation : numeric_term
-                         | BRACKET numeric_operation CLOSE_BRACKET
-                         | numeric_operation ADD numeric_operation
-                         | numeric_operation SUB numeric_operation
-                         | numeric_operation MULT numeric_operation
-                         | numeric_operation DIV numeric_operation'''
-
-def p_matrix_term_evolution(p):
-    '''matrix_term : BRACKET matrix_term CLOSE_BRACKET
-                   | ID
-                   | ZEROS BRACKET INTEGER CLOSE_BRACKET
-                   | EYE BRACKET INTEGER CLOSE_BRACKET
-                   | ONES BRACKET INTEGER CLOSE_BRACKET
-                   | list'''
-
-def p_numeric_term_evolution(p):
-    '''numeric_term : BRACKET numeric_term CLOSE_BRACKET
-                    | SUB numeric_term %prec UNARY_SUB
-                    | ID
-                    | INTEGER
-                    | FLOAT
-                    | matrix_element'''
-
-def p_matrix_element_evolution(p):
-    '''matrix_element : ID SQ_BRACKET sequence CLOSE_SQ_BRACKET'''
+def p_term_evolution(p):
+    '''term : assignable
+            | BRACKET term CLOSE_BRACKET
+            | ZEROS BRACKET INTEGER CLOSE_BRACKET
+            | EYE BRACKET INTEGER CLOSE_BRACKET
+            | ONES BRACKET INTEGER CLOSE_BRACKET
+            | SUB term %prec UNARY_SUB
+            | INTEGER
+            | FLOAT
+            | STRING
+            | list'''
 
 def p_list_evolution(p):
     '''list : inner_list
@@ -110,39 +95,17 @@ def p_inner_list_evolution(p):
                   | list COMA inner_list'''
 
 def p_sequence_evolution(p):
-    '''sequence : ID
-                | INTEGER
-                | FLOAT
-                | sequence COMA ID
-                | sequence COMA FLOAT
-                | sequence COMA INTEGER'''
-
-def p_printable_sequence_evolution(p):
-    '''printable_sequence : BRACKET printable_sequence CLOSE_BRACKET
-                          | printable_sequence COMA ID
-                          | printable_sequence COMA INTEGER
-                          | printable_sequence COMA FLOAT
-                          | printable_sequence COMA STRING
-                          | INTEGER
-                          | FLOAT
-                          | list
-                          | STRING
-                          | ID'''
+    '''sequence : term
+                | sequence COMA term'''
 
 def p_condition_evolution(p):
     '''condition : BRACKET condition CLOSE_BRACKET
-                 | BRACKET numeric_operation EQ numeric_operation CLOSE_BRACKET
-                 | BRACKET numeric_operation NEQ numeric_operation CLOSE_BRACKET
-                 | BRACKET numeric_operation LS numeric_operation CLOSE_BRACKET
-                 | BRACKET numeric_operation GR numeric_operation CLOSE_BRACKET
-                 | BRACKET numeric_operation LQ numeric_operation CLOSE_BRACKET
-                 | BRACKET numeric_operation GQ numeric_operation CLOSE_BRACKET'''
-
-def p_returnable_statement(p):
-    '''returnable_statement : numeric_operation
-                            | matrix_operation
-                            | STRING'''
-
+                 | BRACKET operation EQ operation CLOSE_BRACKET
+                 | BRACKET operation NEQ operation CLOSE_BRACKET
+                 | BRACKET operation LS operation CLOSE_BRACKET
+                 | BRACKET operation GR operation CLOSE_BRACKET
+                 | BRACKET operation LQ operation CLOSE_BRACKET
+                 | BRACKET operation GQ operation CLOSE_BRACKET'''
 
 def p_error(p):
     if p:
