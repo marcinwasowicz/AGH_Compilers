@@ -87,7 +87,7 @@ def p_numeric_operation_evolution(p):
                          | numeric_operation DIV numeric_operation
                          | numeric_operation MULT numeric_operation'''
 
-def p_numeric_term(p):
+def p_numeric_term_evolution(p):
     '''numeric_term : ID
                     | matrix_element
                     | INTEGER
@@ -95,17 +95,17 @@ def p_numeric_term(p):
                     | BRACKET numeric_term CLOSE_BRACKET
                     | SUB term %prec UNARY_SUB'''
 
+def p_matrix_term_evolution(p):
+    '''matrix_term : ID
+                   | ZEROS BRACKET INTEGER CLOSE_BRACKET
+                   | EYE BRACKET INTEGER CLOSE_BRACKET
+                   | ONES BRACKET INTEGER CLOSE_BRACKET
+                   | list
+                   | BRACKET matrix_term CLOSE_BRACKET'''
+
 def p_term_evolution(p):
-    '''term : ID
-            | matrix_element
-            | BRACKET term CLOSE_BRACKET
-            | ZEROS BRACKET INTEGER CLOSE_BRACKET
-            | EYE BRACKET INTEGER CLOSE_BRACKET
-            | ONES BRACKET INTEGER CLOSE_BRACKET
-            | SUB term %prec UNARY_SUB
-            | INTEGER
-            | FLOAT
-            | list'''
+    '''term : numeric_term
+            | matrix_term'''
 
 def p_list_evolution(p):
     '''list : inner_list
