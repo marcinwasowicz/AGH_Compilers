@@ -67,17 +67,8 @@ def p_assignable_evolution(p):
     '''matrix_element : ID SQ_BRACKET indexing_sequence CLOSE_SQ_BRACKET'''
 
 def p_operation_evolution(p):
-    '''operation : term
-                 | operation TRANSPOSE
-                 | BRACKET operation CLOSE_BRACKET
-                 | operation ARR_ADD operation
-                 | operation ARR_SUB operation
-                 | operation ARR_MULT operation
-                 | operation ARR_DIV operation
-                 | operation ADD operation
-                 | operation SUB operation
-                 | operation DIV operation
-                 | operation MULT operation'''
+    '''operation : numeric_operation
+                 | matrix_operation'''
 
 def p_numeric_operation_evolution(p):
     '''numeric_operation : numeric_term
@@ -86,6 +77,15 @@ def p_numeric_operation_evolution(p):
                          | numeric_operation SUB numeric_operation
                          | numeric_operation DIV numeric_operation
                          | numeric_operation MULT numeric_operation'''
+
+def p_matrix_operation_evolution(p):
+    '''matrix_operation : matrix_term
+                        | BRACKET matrix_operation CLOSE_BRACKET
+                        | matrix_operation TRANSPOSE
+                        | matrix_operation ARR_ADD matrix_operation
+                        | matrix_operation ARR_SUB matrix_operation
+                        | matrix_operation ARR_MULT matrix_operation
+                        | matrix_operation ARR_DIV matrix_operation'''
 
 def p_numeric_term_evolution(p):
     '''numeric_term : ID
