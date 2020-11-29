@@ -54,8 +54,7 @@ def p_assignement_evolution(p):
                    | lvalue ADD_ASSIGN operation
                    | lvalue SUB_ASSIGN operation
                    | lvalue MULT_ASSIGN operation
-                   | lvalue DIV_ASSIGN operation
-                   | lvalue ASSIGN STRING'''
+                   | lvalue DIV_ASSIGN operation'''
 
 def p_lvalue_evolution(p):
     '''lvalue : ID
