@@ -84,9 +84,9 @@ def p_term_evolution(p):
             | FLOAT
             | STRING
             | list
-            | ZEROS BRACKET INTEGER CLOSE_BRACKET
-            | EYE BRACKET INTEGER CLOSE_BRACKET
-            | ONES BRACKET INTEGER CLOSE_BRACKET'''
+            | ZEROS BRACKET operation CLOSE_BRACKET
+            | EYE BRACKET operation CLOSE_BRACKET
+            | ONES BRACKET operation CLOSE_BRACKET'''
 
 def p_inner_list_evolution(p):
     '''inner_list : list COMA inner_list
