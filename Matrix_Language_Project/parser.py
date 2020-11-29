@@ -61,7 +61,7 @@ def p_lvalue_evolution(p):
               | matrix_element'''
 
 def p_matrix_element_evolution(p):
-    '''matrix_element : ID SQ_BRACKET sequence CLOSE_SQ_BRACKET'''
+    '''matrix_element : ID list'''
 
 def p_operation_evolution(p):
     '''operation : term
@@ -88,17 +88,14 @@ def p_term_evolution(p):
             | EYE BRACKET operation CLOSE_BRACKET
             | ONES BRACKET operation CLOSE_BRACKET'''
 
-def p_inner_list_evolution(p):
-    '''inner_list : list COMA inner_list
-                  | SQ_BRACKET sequence CLOSE_SQ_BRACKET'''
-
 def p_list_evolution(p):
-    '''list : inner_list
-            | SQ_BRACKET list CLOSE_SQ_BRACKET'''
+    '''list : SQ_BRACKET sequence CLOSE_SQ_BRACKET'''
 
 def p_sequence_evolution(p):
     '''sequence : operation
-                | operation COMA sequence'''
+                | operation COMA sequence
+                | SQ_BRACKET sequence CLOSE_SQ_BRACKET
+                | sequence COMA sequence'''
 
 def p_condition_evolution(p):
     '''condition : BRACKET condition CLOSE_BRACKET
