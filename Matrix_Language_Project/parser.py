@@ -97,8 +97,8 @@ def p_list_evolution(p):
             | SQ_BRACKET list CLOSE_SQ_BRACKET'''
 
 def p_sequence_evolution(p):
-    '''sequence : term
-                | term COMA sequence'''
+    '''sequence : operation
+                | operation COMA sequence'''
 
 def p_condition_evolution(p):
     '''condition : BRACKET condition CLOSE_BRACKET
