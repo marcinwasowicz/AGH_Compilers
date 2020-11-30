@@ -10,7 +10,8 @@ precedence = (
     ("right", 'UNARY_SUB'),
     ("left", 'ARR_ADD', 'ARR_SUB'),
     ("left", 'ARR_MULT', 'ARR_DIV'),
-    ("right", 'ELSE', 'THEN')
+    ("right", 'ELSE', 'THEN'),
+    ("left", 'TRANSPOSE')
 )
 
 def p_program_evolution(p):
@@ -56,8 +57,8 @@ def p_lvalue_evolution_matrix_element(p):
     p[0] = p[1]
 
 def p_matrix_element_evolution(p):
-    '''matrix_element : ID list'''
-    p[0] = AST.MatrixElement(identifier=p[1], indexing_sequence=p[2])
+    '''matrix_element : ID SQ_BRACKET sequence CLOSE_SQ_BRACKET'''
+    p[0] = AST.MatrixElement(identifier=AST.Variable(name=p[1]), indexing_sequence=p[3])
 
 def p_list_evolution(p):
     '''list : SQ_BRACKET sequence CLOSE_SQ_BRACKET'''
@@ -132,7 +133,7 @@ def p_condition_evolution_with_operator(p):
                  | BRACKET operation GR operation CLOSE_BRACKET
                  | BRACKET operation LQ operation CLOSE_BRACKET
                  | BRACKET operation GQ operation CLOSE_BRACKET'''
-    p[0] = AST.Condition(operator=p[2], left=p[1], right=p[3])
+    p[0] = AST.Condition(operator=p[3], left=p[2], right=p[4])
     
 def p_block_evolution(p):
     '''block : CURL_BRACKET actions CLOSE_CURL_BRACKET
@@ -145,7 +146,7 @@ def p_while_looping_evolution(p):
 
 def p_for_looping_evolution(p):
     '''for_looping : FOR ID ASSIGN operation RANGE operation block'''
-    p[0] = AST.ForLooping(iterator=p[2], start=p[4], end=p[6], body=p[7])
+    p[0] = AST.ForLooping(iterator=AST.Variable(name = p[2]), start=p[4], end=p[6], body=p[7])
 
 def p_error(p):
     if p:
