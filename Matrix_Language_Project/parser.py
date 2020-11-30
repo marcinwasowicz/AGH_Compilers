@@ -83,7 +83,6 @@ def p_operation_evolution_with_operators(p):
                  | operation ARR_MULT operation
                  | operation ARR_DIV operation
                  | operation TRANSPOSE'''
-
     p[0] = AST.Operation(operator=p[2], left=p[1], right=p[3] if len(p) > 3 else None)
     
 def p_term_evolution(p):
