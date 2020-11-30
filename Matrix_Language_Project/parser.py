@@ -8,46 +8,26 @@ precedence = (
     ("left", 'MULT', 'DIV'),
     ("right", 'UNARY_SUB'),
     ("left", 'ARR_ADD', 'ARR_SUB'),
-    ("left", 'ARR_MULT', 'ARR_DIV')
+    ("left", 'ARR_MULT', 'ARR_DIV'),
+    ("right", 'ELSE', 'THEN')
 )
 
-def p_general_expression(p):
-    '''ex : BRACKET ex CLOSE_BRACKET
-          | CURL_BRACKET ex CLOSE_CURL_BRACKET'''
+def p_program_evolution(p):
+    '''program : actions'''
 
-def p_expression_evloution(p):
-    '''ex : action SEPARATOR ex
-          | action SEPARATOR
-          | ifstatement ex
-          | ifstatement
-          | looping ex
-          | looping'''
+def p_actions_evolution(p):
+    '''actions : block
+               | actions block'''
 
 def p_action_evolution(p):
-    '''action : assignement
-              | PRINT sequence
-              | CONTINUE
-              | BREAK
-              | RETURN operation'''
-
-def p_ifstatement_evolution(p):
-    '''ifstatement : IF condition ex
-                   | IF condition ex elseifstatement'''
-
-def p_elseifstatement_evolution(p):
-    '''elseifstatement : ELSE IF condition ex 
-                       | ELSE IF condition ex elseifstatement
-                       | ELSE ex'''
-
-def p_looping_evolution(p):
-    '''looping : while_looping
-               | for_looping'''
-
-def p_while_looping_evolution(p):
-    '''while_looping : WHILE condition ex'''
-
-def p_for_looping_evolution(p):
-    '''for_looping : FOR ID ASSIGN operation RANGE operation ex'''
+    '''action : assignement SEPARATOR
+              | ifstatement
+              | for_looping
+              | while_looping
+              | PRINT sequence SEPARATOR
+              | CONTINUE SEPARATOR
+              | BREAK SEPARATOR
+              | RETURN operation SEPARATOR'''
 
 def p_assignement_evolution(p):
     '''assignement : lvalue ASSIGN operation
@@ -62,6 +42,13 @@ def p_lvalue_evolution(p):
 
 def p_matrix_element_evolution(p):
     '''matrix_element : ID list'''
+
+def p_list_evolution(p):
+    '''list : SQ_BRACKET sequence CLOSE_SQ_BRACKET'''
+
+def p_sequence_evolution(p):
+    '''sequence : sequence COMA operation
+                | operation'''
 
 def p_operation_evolution(p):
     '''operation : term
@@ -88,14 +75,9 @@ def p_term_evolution(p):
             | EYE BRACKET operation CLOSE_BRACKET
             | ONES BRACKET operation CLOSE_BRACKET'''
 
-def p_list_evolution(p):
-    '''list : SQ_BRACKET sequence CLOSE_SQ_BRACKET'''
-
-def p_sequence_evolution(p):
-    '''sequence : operation
-                | operation COMA sequence
-                | SQ_BRACKET sequence CLOSE_SQ_BRACKET
-                | sequence COMA sequence'''
+def p_ifstatement_evolution(p):
+    '''ifstatement : IF condition block %prec THEN
+                   | IF condition block ELSE block'''
 
 def p_condition_evolution(p):
     '''condition : BRACKET condition CLOSE_BRACKET
@@ -105,6 +87,16 @@ def p_condition_evolution(p):
                  | BRACKET operation GR operation CLOSE_BRACKET
                  | BRACKET operation LQ operation CLOSE_BRACKET
                  | BRACKET operation GQ operation CLOSE_BRACKET'''
+
+def p_block_evolution(p):
+    '''block : CURL_BRACKET actions CLOSE_CURL_BRACKET
+             | action'''
+
+def p_while_looping_evolution(p):
+    '''while_looping : WHILE condition block'''
+
+def p_for_looping_evolution(p):
+    '''for_looping : FOR ID ASSIGN operation RANGE operation block'''
 
 def p_error(p):
     if p:
