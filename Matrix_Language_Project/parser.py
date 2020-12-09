@@ -5,13 +5,13 @@ import ply.yacc as yacc
 tokens = scanner.tokens
 
 precedence = (
+    ("right", 'ELSE'),
     ("left", 'ADD', 'SUB'),
     ("left", 'MULT', 'DIV'),
-    ("right", 'UNARY_SUB'),
     ("left", 'ARR_ADD', 'ARR_SUB'),
     ("left", 'ARR_MULT', 'ARR_DIV'),
-    ("right", 'ELSE', 'THEN'),
-    ("left", 'TRANSPOSE')
+    ("left", 'TRANSPOSE'),
+    ("right", 'UNARY_SUB'),
 )
 
 def p_program_evolution(p):
