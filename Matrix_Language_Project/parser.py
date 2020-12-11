@@ -118,7 +118,7 @@ def p_term_evoultion_matrix_initialization(p):
     p[0] = AST.MatrixInitializer(keyword=p[1], operation=p[3])
 
 def p_ifstatement_evolution(p):
-    '''ifstatement : IF condition block %prec THEN
+    '''ifstatement : IF condition block
                    | IF condition block ELSE block'''
     p[0] = AST.IfStatement(condition=p[2], body=p[3], else_body=p[5] if len(p) > 5 else None)
 
