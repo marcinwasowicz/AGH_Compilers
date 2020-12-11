@@ -67,7 +67,7 @@ def p_list_evolution(p):
 def p_sequence_evolution(p):
     '''sequence : operation COMA sequence
                 | operation'''
-    p[0] = AST.Sequence(head=p[1], tail=p[3] if len(p) > 3 else None)
+    p[0] = AST.Sequence(elements=[p[1]].extend(p[3].elements) if len(p) > 3 and p[3].elements is not None else [p[1]])
 
 def p_operation_evolution(p):
     '''operation : term

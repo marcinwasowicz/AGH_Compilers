@@ -28,9 +28,8 @@ class MatrixInitializer(Node):
         self.operation = operation
 
 class Sequence(Node):
-    def __init__(self, head, tail=None):
-        self.head = head
-        self.tail = tail
+    def __init__(self, elements=None):
+       self.elements = elements
 
 class List(Node):
     def __init__(self, sequence):

@@ -41,9 +41,9 @@ class TreePrinter:
 
     @addToClass(AST.Sequence)
     def printTree(self, indent=0):
-        self.head.printTree(indent)
-        if self.tail is not None:
-            self.tail.printTree(indent)
+        if self.elements is not None:
+            for element in self.elements:
+                element.printTree(indent)
 
     @addToClass(AST.List)
     def printTree(self, indent=0):
