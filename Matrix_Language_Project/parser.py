@@ -112,9 +112,9 @@ def p_term_evolution_string(p):
     p[0] = AST.String(value=p[1])
 
 def p_term_evoultion_matrix_initialization(p):
-    '''term : ZEROS BRACKET operation CLOSE_BRACKET
-            | EYE BRACKET operation CLOSE_BRACKET
-            | ONES BRACKET operation CLOSE_BRACKET'''
+    '''term : ZEROS BRACKET INTEGER CLOSE_BRACKET
+            | EYE BRACKET INTEGER CLOSE_BRACKET
+            | ONES BRACKET INTEGER CLOSE_BRACKET'''
     p[0] = AST.MatrixInitializer(keyword=p[1], operation=p[3])
 
 def p_ifstatement_evolution(p):
