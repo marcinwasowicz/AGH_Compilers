@@ -35,6 +35,3 @@ class SymbolTable:
             if scope[0] in names:
                 return scope
         return None
-
-
-    

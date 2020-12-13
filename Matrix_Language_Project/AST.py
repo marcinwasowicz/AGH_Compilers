@@ -84,9 +84,3 @@ class IfStatement(Node):
 class Actions(Node):
     def __init__(self, series):
         self.series = series
-
-
-
-
-
-

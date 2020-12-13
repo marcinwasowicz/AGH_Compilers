@@ -221,11 +221,3 @@ class TypeChecker(NodeVisitor):
         result = []
         TypeChecker._unpack_nested_list([error for error in errors if error is not None], result)
         return result
-
-
-
-
-
-
-
-        

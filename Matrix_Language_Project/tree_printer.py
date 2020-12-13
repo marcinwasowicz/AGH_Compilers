@@ -109,5 +109,3 @@ class TreePrinter:
     def printTree(self, indent=0):
         for action in self.series:
             action.printTree(indent)
-
-    
