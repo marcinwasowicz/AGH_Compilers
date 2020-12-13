@@ -4,7 +4,7 @@ from type_checker import TypeChecker
 import sys
 import scanner
 import parser
-import TreePrinter
+import tree_printer
 
 
 if __name__ == '__main__':
