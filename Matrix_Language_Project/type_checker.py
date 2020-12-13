@@ -33,6 +33,14 @@ class TypeChecker(NodeVisitor):
                 ('Float', 'Integer'): 'Float', 
             }
 
+    @staticmethod
+    def _unpack_nested_list(nested_list, output):
+        for i in nested_list: 
+            if type(i) == list: 
+                TypeChecker._unpack_nested_list(i, output) 
+            else: 
+                output.append(i)
+
     def getVectorVectorOperationType(self, left_side, right_side, operator):
         if len(left_side) != len(right_side):
                 return error_message.TypeMismatch(self.symbol_table.getParentScope())
@@ -210,7 +218,9 @@ class TypeChecker(NodeVisitor):
 
     def visitActions(self, node: AST.Actions):
         errors = [self.visit(action) for action in node.series]
-        return [error for error in errors if error is not None]
+        result = []
+        TypeChecker._unpack_nested_list([error for error in errors if error is not None], result)
+        return result
 
 
 
