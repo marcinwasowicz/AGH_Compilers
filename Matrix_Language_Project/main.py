@@ -9,6 +9,8 @@ import tree_printer
 
 if __name__ == '__main__':
     text = open(sys.argv[1]).read()
-    ast = parser.parser.parse(input=text, lexer=scanner.lexer)
+    ast = parser.parser.parse(input=text, lexer=scanner.lexer, tracking=True)
     type_checker = TypeChecker(SymbolTable())
     errors = type_checker.visit(ast)
+    for error in errors:
+        print(error)

@@ -41,38 +41,38 @@ class TypeChecker(NodeVisitor):
             else: 
                 output.append(i)
 
-    def getVectorVectorOperationType(self, left_side, right_side, operator):
+    def getVectorVectorOperationType(self, left_side, right_side, operator, lineno):
         if len(left_side) != len(right_side):
-                return error_message.TypeMismatch(self.symbol_table.getParentScope())
+                return error_message.TypeMismatch(lineno)
         if operator in ['*', '*=']:
             return [AST.Float.__name__] if AST.Float.__name__ in left_side or AST.Float.__name__ in left_side else [AST.Integer.__name__]
         else:
             return [self.operation_types[(left_side[idx], right_side[idx])] for idx in range(len(left_side))]
 
-    def getVectorMatrixOperationType(self, matrix_side, vector_side, operator):
+    def getVectorMatrixOperationType(self, matrix_side, vector_side, operator, lineno):
         if len(matrix_side[0]) != len(vector_side) or operator not in ['*', '*=']:
-            return error_message.TypeMismatch(self.symbol_table.getParentScope())
+            return error_message.TypeMismatch(lineno)
         return [AST.Float.__name__ in vector_side for _ in vector_side]
 
-    def getListOperationType(self, left_side, right_side, operator):
+    def getListOperationType(self, left_side, right_side, operator, lineno):
         if not isinstance(left_side[0], list) and not isinstance(right_side[0], list):
-            return self.getVectorVectorOperationType(left_side, right_side, operator)
+            return self.getVectorVectorOperationType(left_side, right_side, operator, lineno)
         if not isinstance(left_side[0], list):
-            return self.getVectorMatrixOperationType(right_side, left_side, operator)
+            return self.getVectorMatrixOperationType(right_side, left_side, operator, lineno)
         if not isinstance(right_side[0], list):
-            return self.getVectorMatrixOperationType(left_side, right_side, operator)
+            return self.getVectorMatrixOperationType(left_side, right_side, operator, lineno)
         if operator in ['*', '*=']:
             if len(left_side[0]) != len(right_side):
-                return error_message.TypeMismatch(self.symbol_table.getParentScope())
+                return error_message.TypeMismatch(lineno)
             return [[AST.Float.__name__ for _ in right_side[0]] for _ in left_side[0]]
         if len(left_side) != len(right_side) or len(left_side[0]) != len(right_side[0]):
-            return error_message.TypeMismatch(self.symbol_table.getParentScope())
+            return error_message.TypeMismatch(lineno)
         return [[AST.Float.__name__ for _ in right_side[0]] for _ in right_side]
 
-    def getOperationType(self, left_side, right_side, operator):
+    def getOperationType(self, left_side, right_side, operator, lineno):
         if isinstance(left_side, list) or isinstance(right_side, list):
-            return self.getListOperationType(left_side, right_side, operator)
-        return self.operation_types.get((left_side, right_side), error_message.TypeMismatch(self.symbol_table.getParentScope()))
+            return self.getListOperationType(left_side, right_side, operator, lineno)
+        return self.operation_types.get((left_side, right_side), error_message.TypeMismatch(lineno))
 
     def visitInteger(self, node: AST.Integer):
         return node.__class__.__name__
@@ -86,7 +86,7 @@ class TypeChecker(NodeVisitor):
     def visitVariable(self, node: AST.Variable):
         variable = self.symbol_table.get(node.name)
         if variable is None:
-            return error_message.UnitializedAccess(node.name, self.symbol_table.getParentScope())    
+            return error_message.UnitializedAccess(node.lineno)    
         return variable.type_info
     
     def visitUnaryVariable(self, node: AST.UnaryVariable):
@@ -99,7 +99,7 @@ class TypeChecker(NodeVisitor):
         visited_sequence = self.visit(node.sequence)
         inner_lists = set([len(element) for element in visited_sequence if isinstance(element, list)])
         if len(inner_lists) not in [0, 1]:
-            return error_message.SizeMismatch(self.symbol_table.getParentScope())
+            return error_message.SizeMismatch(node.lineno)
         return visited_sequence
 
     def visitMatrixElement(self, node: AST.MatrixElement):
@@ -107,27 +107,27 @@ class TypeChecker(NodeVisitor):
         index_sequence = node.indexing_sequence.elements
 
         if variable is None:
-            return error_message.UnitializedAccess(self.symbol_table.getParentScope())
+            return error_message.UnitializedAccess(node.lineno)
         if not isinstance(variable.type_info, list):
-            return error_message.NotIndexable(self.symbol_table.getParentScope())
+            return error_message.NotIndexable(node.lineno)
         if set([elem.__class__.__name__ for elem in index_sequence]) != set([AST.Integer.__name__]):
-            return error_message.InvalidIndexing(self.symbol_table.getParentScope())
+            return error_message.InvalidIndexing(node.lineno)
 
         type_repr = variable.type_info
         for idx in [int(elem.value) for elem in index_sequence]:
             if len(type_repr) <= idx or not isinstance(type_repr, list):
-                return error_message.ListOutOfIndex(self.symbol_table.getParentScope())
+                return error_message.ListOutOfIndex(node.lineno)
             type_repr = type_repr[idx]
         return type_repr
 
     def visitMatrixInitializer(self, node: AST.MatrixInitializer):
         if node.operation.__class__ != AST.Integer:
-            return error_message.InvalidInitializer(self.symbol_table.getParentScope())
+            return error_message.InvalidInitializer(node.lineno)
         return [[AST.Integer.__name__ for _ in range(int(node.operation.value))] for _ in range(int(node.operation.value))]
 
     def visitKeyWordInstruction(self, node: AST.KeyWordInstruction):
         if node.keyword in ['break', 'continue'] and self.symbol_table.searchScopeOfName(['while_looping', 'for_looping']) is None:
-            return error_message.KeyWordInstructionOutOfScope(self.symbol_table.getParentScope())
+            return error_message.KeyWordInstructionOutOfScope(node.lineno)
         if node.keyword == 'print':
             errors = self.visit(node.continuation)
             errors = [error for error in errors if error is not None and not isinstance(error, str)]
@@ -147,15 +147,15 @@ class TypeChecker(NodeVisitor):
             if issubclass(matrix_element_type.__class__, error_message.ErrorMessage):
                 return matrix_element_type
             elif matrix_element_type != operation_type:
-                return error_message.TypeMismatch(self.symbol_table.getParentScope())
+                return error_message.TypeMismatch(node.lineno)
         else:
             variable = self.symbol_table.get(node.lvalue.name)
             if variable is None and node.operator != '=':
-                return error_message.UnitializedAccess(self.symbol_table.getParentScope())
+                return error_message.UnitializedAccess(node.lineno)
             elif node.operator == '=':
                 self.symbol_table.put(node.lvalue.name, operation_type)
             else:
-                assignment_type = self.getOperationType(variable.type_info, operation_type, node.operator)
+                assignment_type = self.getOperationType(variable.type_info, operation_type, node.operator, node.lineno)
                 if issubclass(assignment_type.__class__, error_message.ErrorMessage):
                     return assignment_type
                 self.symbol_table.put(variable.name, assignment_type)
@@ -168,7 +168,7 @@ class TypeChecker(NodeVisitor):
         if issubclass(right_type.__class__, error_message.ErrorMessage):
             return right_type
         operator = node.operator
-        return self.getOperationType(left_type, right_type, operator)
+        return self.getOperationType(left_type, right_type, operator, node.lineno)
 
     def visitCondition(self, node: AST.Condition):
         left_side_type = self.visit(node.left)
@@ -178,7 +178,7 @@ class TypeChecker(NodeVisitor):
         if issubclass(right_side_type.__class__, error_message.ErrorMessage):
             return right_side_type
         if node.operator not in ['==', '!='] and (isinstance(left_side_type, list) or isinstance(right_side_type, list)):
-            return error_message.TypeMismatch()
+            return error_message.TypeMismatch(node.lineno)
         
     def visitForLooping(self, node: AST.ForLooping):
         self.symbol_table.pushScope('for_looping')
