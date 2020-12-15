@@ -192,7 +192,6 @@ class TypeChecker(NodeVisitor):
         if errors != []:
             return errors
 
-
     def visitWhileLooping(self, node: AST.WhileLooping):
         self.symbol_table.pushScope('while_looping')
         errors = [self.visit(node.condition), self.visit(node.body)]
