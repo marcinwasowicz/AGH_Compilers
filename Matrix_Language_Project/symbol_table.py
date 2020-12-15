@@ -21,7 +21,7 @@ class SymbolTable:
                 return scope[1][name]
         return None
     
-    def getParentScope(self):
+    def getCurrScope(self):
         return self.scope_list[0]
     
     def pushScope(self, name):
