@@ -1,5 +1,5 @@
-import scanner
-import AST
+from frontend import scanner 
+from frontend import AST
 import ply.yacc as yacc
 
 tokens = scanner.tokens

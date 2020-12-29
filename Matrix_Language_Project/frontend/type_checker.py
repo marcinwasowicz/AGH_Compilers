@@ -1,8 +1,8 @@
-from symbol_table import SymbolTable
-from symbol_table import VariableSymbol
+from frontend.symbol_table import SymbolTable
+from frontend.symbol_table import VariableSymbol
 
-import AST
-import error_message
+from frontend import AST
+from frontend import error_message
 
 
 class NodeVisitor(object):

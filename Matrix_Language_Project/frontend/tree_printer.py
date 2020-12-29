@@ -1,5 +1,5 @@
 from __future__ import print_function
-import AST
+from frontend import AST
 
 def addToClass(cls):
 
