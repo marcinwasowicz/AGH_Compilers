@@ -1,16 +1,16 @@
-from symbol_table import SymbolTable
-from type_checker import TypeChecker
+from frontend import symbol_table
+from frontend import type_checker
+from frontend import scanner
+from frontend import parser
+from frontend import tree_printer
 
 import sys
-import scanner
-import parser
-import tree_printer
 
 
 if __name__ == '__main__':
     text = open(sys.argv[1]).read()
     ast = parser.parser.parse(input=text, lexer=scanner.lexer, tracking=True)
-    type_checker = TypeChecker(SymbolTable())
+    type_checker = type_checker.TypeChecker(symbol_table.SymbolTable())
     errors = type_checker.visit(ast)
     for error in errors:
         print(error)
