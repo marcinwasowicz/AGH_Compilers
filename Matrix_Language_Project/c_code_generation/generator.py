@@ -73,7 +73,7 @@ class CodeGenerator(NodeVisitor):
     def visitAssignment(self, node: AST.Assignment, indent):
         result = '\t' * indent
         right_type = self.type_checker.visit(node.operation)
-        variable_name = self.visit(node.lvalue, indent)
+        variable_name = node.lvalue.name if isinstance(node.lvalue, AST.Variable) else node.lvalue.identifier.name
         if self.symbol_table.get(variable_name) is None:
             if isinstance(right_type, list):
                 result += gu.get_matrix_dominant_type(right_type) + ' ' + variable_name + gu.get_matrix_dimensions(right_type)
@@ -81,7 +81,10 @@ class CodeGenerator(NodeVisitor):
                 result += gu.types_dict[right_type] + ' ' + variable_name
             self.symbol_table.put(variable_name, right_type)
         else:
-            result += variable_name
+            if isinstance(node.lvalue, AST.MatrixElement):
+                result += self.visit(node.lvalue, indent)
+            else:
+                result += variable_name
         return result + ' ' + node.operator + ' ' + self.visit(node.operation, indent) + ';\n' 
 
     def visitOperation(self, node: AST.Operation, indent):
