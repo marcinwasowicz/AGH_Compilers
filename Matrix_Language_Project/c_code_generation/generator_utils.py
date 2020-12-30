@@ -22,7 +22,7 @@ keyword_dict = {
     'continue': lambda continuation, cont_type, indent: '\t' * indent + 'continue' + ';\n',
     'return': lambda continuation,  cont_type, indent: '\t' * indent + 'return ' + continuation + ';\n',
     'print': lambda continuation, cont_type, indent: '\t' * indent + 
-        'printf(' + '"' + "".join([print_dict[elem] for elem in cont_type ]) + '"' + ', ' +  continuation + ');\n'
+        'printf(' + '"' + " ".join([print_dict[elem] for elem in cont_type ]) + '\\n"' + ', ' +  continuation + ');\n'
 }
 
 def eye_to_diagonal(eye, size):
