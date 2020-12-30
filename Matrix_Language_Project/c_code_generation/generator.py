@@ -66,9 +66,9 @@ class CodeGenerator(NodeVisitor):
         return self.visit(node.identifier, indent) + gu.indexing_sequence_to_string(indexing_sequence)
 
     def visitKeyWordInstruction(self, node: AST.KeyWordInstruction, indent):
-        if node.continuation is not None:
-            return '\t' * indent + node.keyword + self.visit(node.continuation, indent) + ';\n'
-        return '\t' * indent + node.keyword + ';'
+        continuation = self.visit(node.continuation, indent) if node.continuation is not None else None
+        continuation_type = self.type_checker.visit(node.continuation) if node.continuation is not None else None
+        return gu.keyword_dict[node.keyword](continuation, continuation_type, indent)
     
     def visitAssignment(self, node: AST.Assignment, indent):
         result = '\t' * indent
@@ -104,12 +104,13 @@ class CodeGenerator(NodeVisitor):
     def visitForLooping(self, node: AST.ForLooping, indent):
         self.symbol_table.pushScope('for_looping')
         iterator = self.visit(node.iterator, indent)
-        iter_type = self.type_checker.visit(node.iterator)
+        iter_type = self.type_checker.visit(node.start)
+        self.symbol_table.put(iterator, iter_type)
         start = self.visit(node.start, indent)
         end = self.visit(node.end, indent)
         body = self.visit(node.body, indent + 1)
         self.symbol_table.popScope()
-        return gu.for_loop_to_string(iterator, iter_type, start, end, body)
+        return gu.for_loop_to_string(iterator, iter_type, start, end, body, indent)
 
     def visitWhileLooping(self, node: AST.WhileLooping, indent):
         self.symbol_table.pushScope('while_looping')

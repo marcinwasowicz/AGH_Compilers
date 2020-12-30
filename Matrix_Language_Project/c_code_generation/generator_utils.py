@@ -11,6 +11,20 @@ types_dict = {
     AST.String.__name__: 'char*'
 }
 
+print_dict = {
+    AST.Integer.__name__: '%d',
+    AST.Float.__name__: '%f',
+    AST.String.__name__: '%s'
+}
+
+keyword_dict = {
+    'break': lambda continuation, cont_type, indent: '\t' * indent + 'break' + ';\n',
+    'continue': lambda continuation, cont_type, indent: '\t' * indent + 'continue' + ';\n',
+    'return': lambda continuation,  cont_type, indent: '\t' * indent + 'return' + continuation + ';\n',
+    'print': lambda continuation, cont_type, indent: '\t' * indent + 
+        'printf(' + '"' + "".join([print_dict[elem] for elem in cont_type ]) + '"' + ', ' +  continuation + ');\n'
+}
+
 def eye_to_diagonal(eye, size):
     idxs = set([i * size + i for i in range(size)])
     zero_count = 0
@@ -66,7 +80,7 @@ def indexing_sequence_to_string(indexing_sequence):
         result += '[' + element + ']'
     return result
 
-def for_loop_to_string(iterator, iter_type, start, end, indent, body):
+def for_loop_to_string(iterator, iter_type, start, end, body, indent):
     result = '\t' * indent + 'for(' + types_dict[iter_type] + ' ' + iterator +  ' = ' + start + '; '
     result += iterator + ' < ' + end + '; ' + iterator + '++){\n'
     result += body + '\t' * indent + '}\n'
