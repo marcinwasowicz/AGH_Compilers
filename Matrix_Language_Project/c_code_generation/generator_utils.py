@@ -20,7 +20,7 @@ print_dict = {
 keyword_dict = {
     'break': lambda continuation, cont_type, indent: '\t' * indent + 'break' + ';\n',
     'continue': lambda continuation, cont_type, indent: '\t' * indent + 'continue' + ';\n',
-    'return': lambda continuation,  cont_type, indent: '\t' * indent + 'return' + continuation + ';\n',
+    'return': lambda continuation,  cont_type, indent: '\t' * indent + 'return ' + continuation + ';\n',
     'print': lambda continuation, cont_type, indent: '\t' * indent + 
         'printf(' + '"' + "".join([print_dict[elem] for elem in cont_type ]) + '"' + ', ' +  continuation + ');\n'
 }
