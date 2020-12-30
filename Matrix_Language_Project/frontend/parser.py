@@ -154,4 +154,4 @@ def p_error(p):
     else:
         print("Unexpected end of input")
 
-parser = yacc.yacc()
+parser = yacc.yacc(debug=False, write_tables=False)
