@@ -11,6 +11,17 @@ types_dict = {
     AST.String.__name__: 'char*'
 }
 
+def eye_to_diagonal(eye, size):
+    idxs = set([i * size + i for i in range(size)])
+    zero_count = 0
+    eye = list(eye)
+    for char_idx, char in enumerate(eye):
+        if char == '0':
+            if zero_count in idxs:
+                eye[char_idx] = '1'
+            zero_count += 1
+    return "".join(eye)
+
 matrix_initializers_dict = {
     'zeros': lambda size, indent: '{\n' + ('\t' * (indent + 1) + '{' + '0, ' * (size -1) + '0' + '},\n') * (size - 1) + 
         ('\t' * (indent + 1) + '{' + '0, ' * (size -1) + '0' + '}\n') + '\t' * indent + '}',
@@ -18,8 +29,9 @@ matrix_initializers_dict = {
     'ones': lambda size, indent: '{\n' + ('\t' * (indent + 1) + '{' + '1, ' * (size -1) + '1' + '},\n') * (size - 1) + 
         ('\t' * (indent + 1) + '{' + '1, ' * (size -1) + '1' + '}\n') + '\t' * indent + '}',
 
-    'eye': lambda size, indent: '{\n' + ('\t' * (indent + 1) + '{' + '0, ' * (size -1) + '0' + '},\n') * (size - 1) + 
-        ('\t' * (indent + 1) + '{' + '0, ' * (size -1) + '0' + '}\n') + '\t' * indent + '}',
+    'eye': lambda size, indent: eye_to_diagonal(
+        '{\n' + ('\t' * (indent + 1) + '{' + '0, ' * (size -1) + '0' + '},\n') * (size - 1) + 
+        ('\t' * (indent + 1) + '{' + '0, ' * (size -1) + '0' + '}\n') + '\t' * indent + '}', size)
 }
 
 libraries = [
