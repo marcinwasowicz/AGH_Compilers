@@ -50,8 +50,16 @@ class InvalidInitializer(ErrorMessage):
 class TypeMismatch(ErrorMessage):
     def __init__(self, lineno):
         super().__init__(lineno)
+
     def __str__(self):
         return "Type Mismatch at line: " + super().__str__()
+
+class TypeReassignment(ErrorMessage):
+    def __init__(self, lineno):
+        super().__init__(lineno)
+
+    def __str__(self):
+        return "Type reassignment at line: " + super().__str__()
 
 class KeyWordInstructionOutOfScope(ErrorMessage):
     def __init__(self, lineno):

@@ -152,7 +152,9 @@ class TypeChecker(NodeVisitor):
             variable = self.symbol_table.get(node.lvalue.name)
             if variable is None and node.operator != '=':
                 return error_message.UnitializedAccess(node.lineno)
-            elif node.operator == '=':
+            elif node.operator == '=': 
+                if variable is not None and variable.type_info != operation_type:
+                    return error_message.TypeReassignment(node.lineno)
                 self.symbol_table.put(node.lvalue.name, operation_type)
             else:
                 assignment_type = self.getOperationType(variable.type_info, operation_type, node.operator, node.lineno)
