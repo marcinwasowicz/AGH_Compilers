@@ -1,12 +1,12 @@
+import sys
+sys.dont_write_bytecode = True
+
 from frontend import symbol_table
 from frontend import type_checker
 from frontend import scanner
 from frontend import parser
 from frontend import tree_printer
 from c_code_generation import generator
-
-import sys
-
 
 if __name__ == '__main__':
     text = open(sys.argv[1], 'r').read()
