@@ -41,7 +41,7 @@ class CodeGenerator(NodeVisitor):
         return node.value
 
     def visitString(self, node: AST.String, indent):
-        return '"' + node.value + '"'
+        return f'{node.value}'
 
     def visitVariable(self, node: AST.Variable, indent):
         return node.name
@@ -62,7 +62,8 @@ class CodeGenerator(NodeVisitor):
         return '{' + self.visit(node.sequence, indent) + '}'
 
     def visitMatrixElement(self, node: AST.MatrixElement, indent):
-        return self.visit(node.identifier, indent) + '[' + self.visit(node.indexing_sequence, indent) + ']'
+        indexing_sequence = [self.visit(element, indent) for element in node.indexing_sequence.elements]
+        return self.visit(node.identifier, indent) + gu.indexing_sequence_to_string(indexing_sequence)
 
     def visitKeyWordInstruction(self, node: AST.KeyWordInstruction, indent):
         if node.continuation is not None:
@@ -101,23 +102,32 @@ class CodeGenerator(NodeVisitor):
         return self.visit(node.left, indent) + ' ' + node.operator + ' ' + self.visit(node.right, indent)
 
     def visitForLooping(self, node: AST.ForLooping, indent):
-        pass
+        self.symbol_table.pushScope('for_looping')
+        iterator = self.visit(node.iterator, indent)
+        iter_type = self.type_checker.visit(node.iterator)
+        start = self.visit(node.start, indent)
+        end = self.visit(node.end, indent)
+        body = self.visit(node.body, indent + 1)
+        self.symbol_table.popScope()
+        return gu.for_loop_to_string(iterator, iter_type, start, end, body)
 
     def visitWhileLooping(self, node: AST.WhileLooping, indent):
         self.symbol_table.pushScope('while_looping')
-        result = '\t' * indent + 'while(' + self.visit(node.condition, indent) + '){\n'
-        result += self.visit(node.body, indent + 1)
-        result += '\t' * indent + '}\n'
+        condition = self.visit(node.condition, indent)
+        body = self.visit(node.body, indent + 1)
         self.symbol_table.popScope()
-        return result
+        return gu.while_loop_to_string(condition, body, indent)
 
     def visitIfStatement(self, node: AST.IfStatement, indent):
         self.symbol_table.pushScope('if_statement')
-        result = '\t' * indent + 'if (' + self.visit(node.condition, indent) + '){\n' + self.visit(node.body, indent + 1) + '\t' * indent + '}\n'
+        condition = self.visit(node.condition, indent)
+        body = self.visit(node.body, indent + 1)
+        result = gu.if_to_string(condition, body, indent)
         self.symbol_table.popScope()
         if node.else_body is not None:
             self.symbol_table.pushScope('else')
-            result += '\t' * indent + 'else' + ' ' + '{\n' + self.visit(node.else_body, indent + 1) + '\t' * indent + '}\n'
+            else_body = self.visit(node.else_body, indent + 1)
+            result += gu.else_to_string(else_body, indent)
             self.symbol_table.popScope()
         return result
 

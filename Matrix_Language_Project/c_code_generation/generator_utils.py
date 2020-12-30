@@ -8,7 +8,7 @@ from frontend import AST
 types_dict = {
     AST.Integer.__name__: 'int',
     AST.Float.__name__: 'double',
-    AST.String.__name__: 'char[]'
+    AST.String.__name__: 'char*'
 }
 
 matrix_initializers_dict = {
@@ -47,6 +47,29 @@ def get_matrix_dominant_type(matrix: list):
 def resolve_operation(left_side, left_type, right_side, right_type, operator):
     if not isinstance(left_type, list) and not isinstance(right_type, list):
         return left_side + ' ' + operator + ' ' + right_side
+
+def indexing_sequence_to_string(indexing_sequence):
+    result = str()
+    for element in indexing_sequence:
+        result += '[' + element + ']'
+    return result
+
+def for_loop_to_string(iterator, iter_type, start, end, indent, body):
+    result = '\t' * indent + 'for(' + types_dict[iter_type] + ' ' + iterator +  ' = ' + start + '; '
+    result += iterator + ' < ' + end + '; ' + iterator + '++){\n'
+    result += body + '\t' * indent + '}\n'
+    return result
+
+def while_loop_to_string(condition, body, indent):
+    result = '\t' * indent + 'while(' + condition + '){\n'
+    result += body + '\t' * indent + '}\n'
+    return result
+
+def if_to_string(condition, body, indent):
+    return '\t' * indent + 'if (' + condition + '){\n' + body + '\t' * indent + '}\n'
+
+def else_to_string(body, indent):
+    return '\t' * indent + 'else' + ' ' + '{\n' + body + '\t' * indent + '}\n'
 
 def decorate(generated_code):
     headers = str()
