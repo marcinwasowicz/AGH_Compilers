@@ -7,6 +7,7 @@ from frontend import type_checker
 from frontend import symbol_table
 from frontend import AST
 from c_code_generation import generator_utils as gu
+from c_code_generation import matrix_utils as mu
 
 class NodeVisitor(object):
     
@@ -50,7 +51,7 @@ class CodeGenerator(NodeVisitor):
         return node.operator + self.visit(node.value, indent)
 
     def visitMatrixInitializer(self, node: AST.MatrixInitializer, indent):
-        return gu.matrix_initializers_dict[node.keyword](int(self.visit(node.operation, indent)), indent)
+        return mu.matrix_initializers_dict[node.keyword](int(self.visit(node.operation, indent)))
 
     def visitSequence(self, node: AST.Sequence, indent):
         result = str()
@@ -62,8 +63,9 @@ class CodeGenerator(NodeVisitor):
         return '{' + self.visit(node.sequence, indent) + '}'
 
     def visitMatrixElement(self, node: AST.MatrixElement, indent):
-        indexing_sequence = [self.visit(element, indent) for element in node.indexing_sequence.elements]
-        return self.visit(node.identifier, indent) + gu.indexing_sequence_to_string(indexing_sequence)
+        dim = '{' + self.visit(node.indexing_sequence, indent) + '}'
+        dim_size = str(len([self.visit(element, indent) for element in node.indexing_sequence.elements]))
+        return mu.resolve_matrix_element_dereference(', '.join([self.visit(node.identifier, indent), mu.INT_PTR + dim, dim_size]))
 
     def visitKeyWordInstruction(self, node: AST.KeyWordInstruction, indent):
         continuation = self.visit(node.continuation, indent) if node.continuation is not None else None
@@ -74,32 +76,43 @@ class CodeGenerator(NodeVisitor):
         result = '\t' * indent
         right_type = self.type_checker.visit(node.operation)
         variable_name = node.lvalue.name if isinstance(node.lvalue, AST.Variable) else node.lvalue.identifier.name
+        right_side = self.visit(node.operation, indent)
+        if isinstance(right_type, list):
+            return result + mu.resolve_matrix_assignment(self.symbol_table, variable_name, right_side, node.operator,
+            self.type_checker.visit(node.operation))
         if self.symbol_table.get(variable_name) is None:
-            if isinstance(right_type, list):
-                result += gu.get_matrix_dominant_type(right_type) + ' ' + variable_name + gu.get_matrix_dimensions(right_type)
-            else:
-                result += gu.types_dict[right_type] + ' ' + variable_name
+            result += gu.types_dict[right_type] + ' ' + variable_name
             self.symbol_table.put(variable_name, right_type)
+        elif isinstance(node.lvalue, AST.MatrixElement):
+            return result + mu.resolve_matrix_element_assignment(self.visit(node.lvalue, indent), right_side, node.operator)
         else:
-            if isinstance(node.lvalue, AST.MatrixElement):
-                result += self.visit(node.lvalue, indent)
-            else:
-                result += variable_name
-        return result + ' ' + node.operator + ' ' + self.visit(node.operation, indent) + ';\n' 
+            result += variable_name
+        return result + ' ' + node.operator + ' ' + right_side + ';\n' 
 
     def visitOperation(self, node: AST.Operation, indent):
+        if node is None:
+            return
+
         left_side = self.visit(node.left, indent)
-        right_side = self.visit(node.right, indent)
+        right_side = self.visit(node.right, indent) if node.right is not None else None
 
         left_type = self.type_checker.visit(node.left)
-        right_type = self.type_checker.visit(node.right)
+        right_type = self.type_checker.visit(node.right) if node.right is not None else None
+
+        if isinstance(node.left, AST.MatrixElement):
+            left_side = mu.resolve_matrix_element_dereference(left_side)
+        if isinstance(node.right, AST.MatrixElement):
+            right_side = mu.resolve_matrix_element_dereference(right_side)
 
         if isinstance(node.left, AST.Operation):
             left_side = '(' + left_side + ')'
         if isinstance(node.right, AST.Operation):
             right_side = '(' + right_side + ')'
-
-        return gu.resolve_operation(left_side, left_type, right_side, right_type, node.operator)
+        
+        if not isinstance(left_type, list) and not isinstance(right_type, list):
+            return ' '.join([left_side, node.operator, right_side])
+            
+        return mu.resolve_matrix_operation(left_side, left_type, node.operator, right_side, right_type)
 
     def visitCondition(self, node: AST.Condition, indent):
         return self.visit(node.left, indent) + ' ' + node.operator + ' ' + self.visit(node.right, indent)
