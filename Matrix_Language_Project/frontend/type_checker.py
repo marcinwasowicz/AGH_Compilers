@@ -149,7 +149,7 @@ class TypeChecker(NodeVisitor):
             matrix_element_type = self.visit(node.lvalue)
             if issubclass(matrix_element_type.__class__, error_message.ErrorMessage):
                 return matrix_element_type
-            elif matrix_element_type != operation_type:
+            elif (matrix_element_type, operation_type) not in self.operation_types:
                 return error_message.TypeMismatch(node.lineno)
         else:
             variable = self.symbol_table.get(node.lvalue.name)
