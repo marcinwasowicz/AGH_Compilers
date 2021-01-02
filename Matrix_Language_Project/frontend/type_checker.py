@@ -55,6 +55,8 @@ class TypeChecker(NodeVisitor):
         return [AST.Float.__name__ in vector_side for _ in vector_side]
 
     def getListOperationType(self, left_side, right_side, operator, lineno):
+        if right_side is None:
+            return left_side
         if not isinstance(left_side[0], list) and not isinstance(right_side[0], list):
             return self.getVectorVectorOperationType(left_side, right_side, operator, lineno)
         if not isinstance(left_side[0], list):
@@ -110,9 +112,10 @@ class TypeChecker(NodeVisitor):
             return error_message.UnitializedAccess(node.lineno)
         if not isinstance(variable.type_info, list):
             return error_message.NotIndexable(node.lineno)
-        if set([elem.__class__.__name__ for elem in index_sequence]) != set([AST.Integer.__name__]):
+        if set([self.visit(elem) for elem in index_sequence]) != set([AST.Integer.__name__]):
             return error_message.InvalidIndexing(node.lineno)
-
+        if set([elem.__class__.__name__ for elem in index_sequence]) != set([AST.Integer.__name__]):
+            return AST.Float.__name__
         type_repr = variable.type_info
         for idx in [int(elem.value) for elem in index_sequence]:
             if len(type_repr) <= idx or not isinstance(type_repr, list):
@@ -153,7 +156,7 @@ class TypeChecker(NodeVisitor):
             if variable is None and node.operator != '=':
                 return error_message.UnitializedAccess(node.lineno)
             elif node.operator == '=': 
-                if variable is not None and variable.type_info != operation_type:
+                if variable is not None and variable.type_info != operation_type and not isinstance(operation_type, list) and not isinstance(variable.type_info, list):
                     return error_message.TypeReassignment(node.lineno)
                 self.symbol_table.put(node.lvalue.name, operation_type)
             else:
@@ -166,7 +169,7 @@ class TypeChecker(NodeVisitor):
         left_type = self.visit(node.left)
         if issubclass(left_type.__class__, error_message.ErrorMessage):
             return left_type
-        right_type = self.visit(node.right)
+        right_type = self.visit(node.right) if node.right is not None else None
         if issubclass(right_type.__class__, error_message.ErrorMessage):
             return right_type
         operator = node.operator
