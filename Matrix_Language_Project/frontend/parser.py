@@ -59,6 +59,10 @@ def p_lvalue_evolution_matrix_element(p):
 def p_matrix_element_evolution(p):
     '''matrix_element : ID SQ_BRACKET sequence CLOSE_SQ_BRACKET'''
     p[0] = AST.MatrixElement(identifier=AST.Variable(name=p[1], lineno=p.lineno(1)), indexing_sequence=p[3], lineno=p.lineno(1))
+    
+# def p_matrix_element_evolution(p):
+#     '''matrix_element : operation SQ_BRACKET sequence CLOSE_SQ_BRACKET'''
+#     p[0] = AST.MatrixElement(identifier=p[1], indexing_sequence=p[3], lineno=p.lineno(1))
 
 def p_list_evolution(p):
     '''list : SQ_BRACKET sequence CLOSE_SQ_BRACKET'''

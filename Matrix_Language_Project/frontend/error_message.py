@@ -67,3 +67,17 @@ class KeyWordInstructionOutOfScope(ErrorMessage):
 
     def __str__(self):
         return "Used key word statement out of scope at line: " + super().__str__()
+
+class MatrixOperatorMisuse(ErrorMessage):
+    def __init__(self, lineno):
+        super().__init__(lineno)
+
+    def __str__(self):
+        return "Operator reserved for matrices used with scalars: " + super().__str__()
+
+class InvalidDereferencing(ErrorMessage):
+    def __init__(self, lineno):
+        super().__init__(lineno)
+
+    def __str__(self):
+        return "Matrix element dereference mus be done via named variable, occured at line: " + super().__str__()

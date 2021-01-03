@@ -33,6 +33,8 @@ class TypeChecker(NodeVisitor):
                 ('Float', 'Integer'): 'Float', 
             }
 
+        self.reserved_matrix_operators = ['.+', '-.', '.*', './', "'"]
+
     @staticmethod
     def _unpack_nested_list(nested_list, output):
         for i in nested_list: 
@@ -41,13 +43,20 @@ class TypeChecker(NodeVisitor):
             else: 
                 output.append(i)
 
+    def refactorList(self, list_type):
+        if isinstance(list_type, list):
+            for inner_list in list_type:
+                inner_list = self.refactorList(inner_list)
+        return [elem if elem != AST.Integer.__name__ else AST.Float.__name__ for elem in list_type]
+
+
     def getVectorVectorOperationType(self, left_side, right_side, operator, lineno):
         if len(left_side) != len(right_side):
                 return error_message.TypeMismatch(lineno)
         if operator in ['*', '*=']:
-            return [AST.Float.__name__] if AST.Float.__name__ in left_side or AST.Float.__name__ in left_side else [AST.Integer.__name__]
+            return [AST.Float.__name__] 
         else:
-            return [self.operation_types[(left_side[idx], right_side[idx])] for idx in range(len(left_side))]
+            return [AST.Float.__name__ for idx in range(len(left_side))]
 
     def getVectorMatrixOperationType(self, matrix_side, vector_side, operator, lineno):
         if len(matrix_side[0]) != len(vector_side) or operator not in ['*', '*=']:
@@ -74,6 +83,8 @@ class TypeChecker(NodeVisitor):
     def getOperationType(self, left_side, right_side, operator, lineno):
         if isinstance(left_side, list) or isinstance(right_side, list):
             return self.getListOperationType(left_side, right_side, operator, lineno)
+        if operator in self.reserved_matrix_operators:
+            return error_message.MatrixOperatorMisuse(lineno)
         return self.operation_types.get((left_side, right_side), error_message.TypeMismatch(lineno))
 
     def visitInteger(self, node: AST.Integer):
@@ -102,21 +113,24 @@ class TypeChecker(NodeVisitor):
         inner_lists = set([len(element) for element in visited_sequence if isinstance(element, list)])
         if len(inner_lists) not in [0, 1]:
             return error_message.SizeMismatch(node.lineno)
-        return visited_sequence
+        return self.refactorList(visited_sequence)
 
     def visitMatrixElement(self, node: AST.MatrixElement):
-        variable = self.symbol_table.get(node.identifier.name)
+        if not isinstance(node.identifier, AST.Variable):
+            return error_message.InvalidDereferencing(node.lineno)
+            
         index_sequence = node.indexing_sequence.elements
-
+        variable = self.symbol_table.get(node.identifier.name)
         if variable is None:
             return error_message.UnitializedAccess(node.lineno)
-        if not isinstance(variable.type_info, list):
+        variable_type = variable.type_info
+        if not isinstance(variable_type, list):
             return error_message.NotIndexable(node.lineno)
         if set([self.visit(elem) for elem in index_sequence]) != set([AST.Integer.__name__]):
             return error_message.InvalidIndexing(node.lineno)
         if set([elem.__class__.__name__ for elem in index_sequence]) != set([AST.Integer.__name__]):
             return AST.Float.__name__
-        type_repr = variable.type_info
+        type_repr = variable_type
         for idx in [int(elem.value) for elem in index_sequence]:
             if len(type_repr) <= idx or not isinstance(type_repr, list):
                 return error_message.ListOutOfIndex(node.lineno)
@@ -126,7 +140,7 @@ class TypeChecker(NodeVisitor):
     def visitMatrixInitializer(self, node: AST.MatrixInitializer):
         if node.operation.__class__ != AST.Integer:
             return error_message.InvalidInitializer(node.lineno)
-        return [[AST.Integer.__name__ for _ in range(int(node.operation.value))] for _ in range(int(node.operation.value))]
+        return [[AST.Float.__name__ for _ in range(int(node.operation.value))] for _ in range(int(node.operation.value))]
 
     def visitKeyWordInstruction(self, node: AST.KeyWordInstruction):
         if node.keyword in ['break', 'continue'] and self.symbol_table.searchScopeOfName(['while_looping', 'for_looping']) is None:
