@@ -26,6 +26,7 @@ matrix_operation_dict = {
     '.*': lambda left, right: 'mult_elem_by_elem(' + left + ', ' + right + ')',
     './': lambda left, right: 'div_elem_by_elem(' + left + ', ' + right + ')',
     "'": lambda left, _: 'transpose(' + left + ')',
+    '*': lambda left, right: 'mult(' + left + ', ' + right + ')'
 }
 
 matrix_initializers_dict = {
