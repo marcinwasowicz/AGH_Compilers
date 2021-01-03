@@ -8,6 +8,7 @@ from frontend import symbol_table
 from frontend import AST
 from c_code_generation import generator_utils as gu
 from c_code_generation import matrix_utils as mu
+from c_code_generation import garbage_collector
 
 class NodeVisitor(object):
     
@@ -34,6 +35,7 @@ class CodeGenerator(NodeVisitor):
     def __init__(self):
         self.symbol_table = symbol_table.SymbolTable()
         self.type_checker = type_checker.TypeChecker(self.symbol_table)
+        self.garbage_collector = garbage_collector.GarbageCollector()
 
     def visitInteger(self, node: AST.Integer, indent):
         return node.value
@@ -79,7 +81,7 @@ class CodeGenerator(NodeVisitor):
         right_side = self.visit(node.operation, indent)
         if isinstance(right_type, list):
             return result + mu.resolve_matrix_assignment(self.symbol_table, variable_name, right_side, node.operator,
-            self.type_checker.visit(node.operation))
+            self.type_checker.visit(node.operation), self.garbage_collector, indent)
         if self.symbol_table.get(variable_name) is None:
             result += gu.types_dict[right_type] + ' ' + variable_name
             self.symbol_table.put(variable_name, right_type)
@@ -125,6 +127,7 @@ class CodeGenerator(NodeVisitor):
         start = self.visit(node.start, indent)
         end = self.visit(node.end, indent)
         body = self.visit(node.body, indent + 1)
+        body += self.garbage_collector.purify_curr_scope(self.symbol_table.getCurrScope(), indent + 1)
         self.symbol_table.popScope()
         return gu.for_loop_to_string(iterator, iter_type, start, end, body, indent)
 
@@ -132,6 +135,7 @@ class CodeGenerator(NodeVisitor):
         self.symbol_table.pushScope('while_looping')
         condition = self.visit(node.condition, indent)
         body = self.visit(node.body, indent + 1)
+        body += self.garbage_collector.purify_curr_scope(self.symbol_table.getCurrScope(), indent + 1)
         self.symbol_table.popScope()
         return gu.while_loop_to_string(condition, body, indent)
 
@@ -139,6 +143,7 @@ class CodeGenerator(NodeVisitor):
         self.symbol_table.pushScope('if_statement')
         condition = self.visit(node.condition, indent)
         body = self.visit(node.body, indent + 1)
+        body += self.garbage_collector.purify_curr_scope(self.symbol_table.getCurrScope(), indent + 1)
         result = gu.if_to_string(condition, body, indent)
         self.symbol_table.popScope()
         if node.else_body is not None:
@@ -153,4 +158,5 @@ class CodeGenerator(NodeVisitor):
 
     def generate(self, ast: AST.Node):
         generated_code = self.visit(ast, 1)
+        generated_code += self.garbage_collector.purify_curr_scope(self.symbol_table.getCurrScope(), 1)
         return gu.decorate(generated_code)

@@ -5,6 +5,7 @@ sys.path.insert(0, os.path.abspath('..'))
 
 from frontend import AST
 from frontend import symbol_table
+from c_code_generation import garbage_collector
 
 MATRIX_TYPE = 'matrix*'
 MATRIX_INIT = 'init_matrix_list('
@@ -17,7 +18,7 @@ matrix_assignement_dict = {
     '-=': lambda store, data, _: 'sub_elem_by_elem_store(' + store + ', ' + data + ');\n',
     '*=': lambda store, data, _: 'mult_elem_by_elem_store(' + store + ', ' + data + ');\n',
     '/=': lambda store, data, _: 'div_elem_by_elem_store(' + store + ', ' + data + ');\n',
-    '=': lambda store, data, size: 'store(' + store + ', ' + matrix_init(size, data) + ');\n'
+    '=': lambda store, data, size: store + ' = ' + matrix_init(size, data) + ';\n'
 }
 
 matrix_operation_dict = {
@@ -73,12 +74,26 @@ def resolve_matrix_element_assignment(resolved_matrix_element,value, operator):
 def resolve_matrix_element_dereference(resolved_matrix_element):
     return MATRIX_ELEM_GET + resolved_matrix_element + ')'
 
-def resolve_matrix_assignment(symbol_table: symbol_table.SymbolTable, name, right_side, operator, type_size):
+def resolve_matrix_assignment(symbol_table: symbol_table.SymbolTable, name, right_side, operator, type_size, garbage_collector: garbage_collector.GarbageCollector, indent):
     if symbol_table.get(name) is None:
         symbol_table.put(name, type_size)
+        if symbol_table.get(right_side) is not None:
+            garbage_collector.add_reference(name, right_side)
+        else:
+            garbage_collector.init_reference(name)
         right_side = matrix_init(type_size, right_side)
         return ' '.join([MATRIX_TYPE, name, operator, right_side]) + ';\n'
     else:
+        if operator == '=':
+            if symbol_table.get(right_side) is not None:
+                prefix_result = garbage_collector.reassign_reference(name, right_side)
+            else:
+                prefix_result = garbage_collector.reinit_reference(name)
+            if prefix_result is None:
+                prefix_result = str()
+            else:
+                prefix_result += '\t' * indent
+            return prefix_result + matrix_assignement_dict[operator](name, right_side, type_size)
         return matrix_assignement_dict[operator](name, right_side, type_size)
 
 def resolve_matrix_operation(left_side,left_type, operator, right_side, right_type):
