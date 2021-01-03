@@ -9,6 +9,7 @@ from frontend import AST
 from c_code_generation import generator_utils as gu
 from c_code_generation import matrix_utils as mu
 from c_code_generation import garbage_collector
+from c_code_generation import array_stack
 
 class NodeVisitor(object):
     
@@ -36,6 +37,7 @@ class CodeGenerator(NodeVisitor):
         self.symbol_table = symbol_table.SymbolTable()
         self.type_checker = type_checker.TypeChecker(self.symbol_table)
         self.garbage_collector = garbage_collector.GarbageCollector()
+        self.array_stack = array_stack.ArrayStack()
 
     def visitInteger(self, node: AST.Integer, indent, garbage_collectable=False):
         return node.value
@@ -67,7 +69,7 @@ class CodeGenerator(NodeVisitor):
     def visitMatrixElement(self, node: AST.MatrixElement, indent, garbage_collectable=False):
         dim = '{' + self.visit(node.indexing_sequence, indent) + '}'
         dim_size = str(len([self.visit(element, indent) for element in node.indexing_sequence.elements]))
-        return mu.resolve_matrix_element_dereference(', '.join([self.visit(node.identifier, indent), mu.INT_PTR + dim, dim_size]))
+        return mu.resolve_matrix_element_dereference(', '.join([self.visit(node.identifier, indent), self.array_stack.handle_request(mu.INT_PTR, dim), dim_size]))
 
     def visitKeyWordInstruction(self, node: AST.KeyWordInstruction, indent, garbage_collectable=False):
         continuation = self.visit(node.continuation, indent) if node.continuation is not None else None
@@ -81,7 +83,7 @@ class CodeGenerator(NodeVisitor):
         right_side = self.visit(node.operation, indent, garbage_collectable=True)
         if isinstance(right_type, list):
             return result + mu.resolve_matrix_assignment(self.symbol_table, variable_name, right_side, node.operator,
-            self.type_checker.visit(node.operation), self.garbage_collector, indent)
+            self.type_checker.visit(node.operation), self.garbage_collector, indent, self.array_stack)
         if self.symbol_table.get(variable_name) is None:
             result += gu.types_dict[right_type] + ' ' + variable_name
             self.symbol_table.put(variable_name, right_type)
@@ -114,7 +116,7 @@ class CodeGenerator(NodeVisitor):
         if not isinstance(left_type, list) and not isinstance(right_type, list):
             return ' '.join([left_side, node.operator, right_side])
             
-        return mu.resolve_matrix_operation(left_side, left_type, node.operator, right_side, right_type, garbage_collectable)
+        return mu.resolve_matrix_operation(left_side, left_type, node.operator, right_side, right_type,self.array_stack,garbage_collectable)
 
     def visitCondition(self, node: AST.Condition, indent, garbage_collectable=False):
         return self.visit(node.left, indent) + ' ' + node.operator + ' ' + self.visit(node.right, indent)
@@ -126,29 +128,38 @@ class CodeGenerator(NodeVisitor):
         self.symbol_table.put(iterator, iter_type)
         start = self.visit(node.start, indent)
         end = self.visit(node.end, indent)
+        self.array_stack.init_scope()
         body = self.visit(node.body, indent + 1)
         body += self.garbage_collector.purify_curr_scope(self.symbol_table.getCurrScope(), indent + 1)
+        body = self.array_stack.resume_scope(indent + 1) + body
         self.symbol_table.popScope()
         return gu.for_loop_to_string(iterator, iter_type, start, end, body, indent)
 
     def visitWhileLooping(self, node: AST.WhileLooping, indent, garbage_collectable=False):
         self.symbol_table.pushScope('while_looping')
         condition = self.visit(node.condition, indent)
+        self.array_stack.init_scope()
         body = self.visit(node.body, indent + 1)
         body += self.garbage_collector.purify_curr_scope(self.symbol_table.getCurrScope(), indent + 1)
+        body = self.array_stack.resume_scope(indent + 1) + body
         self.symbol_table.popScope()
         return gu.while_loop_to_string(condition, body, indent)
 
     def visitIfStatement(self, node: AST.IfStatement, indent, garbage_collectable=False):
         self.symbol_table.pushScope('if_statement')
         condition = self.visit(node.condition, indent)
+        self.array_stack.init_scope()
         body = self.visit(node.body, indent + 1)
         body += self.garbage_collector.purify_curr_scope(self.symbol_table.getCurrScope(), indent + 1)
+        body = self.array_stack.resume_scope(indent + 1) + body
         result = gu.if_to_string(condition, body, indent)
         self.symbol_table.popScope()
         if node.else_body is not None:
             self.symbol_table.pushScope('else')
+            self.array_stack.init_scope()
             else_body = self.visit(node.else_body, indent + 1)
+            else_body += self.garbage_collector.purify_curr_scope(self.symbol_table.getCurrScope(), indent + 1)
+            else_body = self.array_stack.resume_scope(indent + 1) + else_body
             result += gu.else_to_string(else_body, indent)
             self.symbol_table.popScope()
         return result
@@ -159,4 +170,5 @@ class CodeGenerator(NodeVisitor):
     def generate(self, ast: AST.Node):
         generated_code = self.visit(ast, 1)
         generated_code += self.garbage_collector.purify_curr_scope(self.symbol_table.getCurrScope(), 1)
+        generated_code = self.array_stack.resume_scope(1) + generated_code
         return gu.decorate(generated_code)

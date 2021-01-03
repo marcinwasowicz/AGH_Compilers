@@ -9,16 +9,16 @@ from c_code_generation import garbage_collector
 
 MATRIX_TYPE = 'matrix*'
 MATRIX_INIT = 'init_matrix_list('
-DOUBLE_PTR = '(double*)'
-INT_PTR = '(int*)'
+DOUBLE_PTR = 'double'
+INT_PTR = 'int'
 MATRIX_ELEM_GET = 'get_element('
 
 matrix_assignement_dict = {
-    '+=': lambda store, data, _: 'add_elem_by_elem_store(' + store + ', ' + data + ');\n',
-    '-=': lambda store, data, _: 'sub_elem_by_elem_store(' + store + ', ' + data + ');\n',
-    '*=': lambda store, data, _: 'mult_elem_by_elem_store(' + store + ', ' + data + ');\n',
-    '/=': lambda store, data, _: 'div_elem_by_elem_store(' + store + ', ' + data + ');\n',
-    '=': lambda store, data, size: store + ' = ' + matrix_init(size, data) + ';\n'
+    '+=': lambda stack, store, data, _: 'add_elem_by_elem_store(' + store + ', ' + data + ');\n',
+    '-=': lambda stack, store, data, _: 'sub_elem_by_elem_store(' + store + ', ' + data + ');\n',
+    '*=': lambda stack, store, data, _: 'mult_elem_by_elem_store(' + store + ', ' + data + ');\n',
+    '/=': lambda stack, store, data, _: 'div_elem_by_elem_store(' + store + ', ' + data + ');\n',
+    '=': lambda stack, store, data, size: store + ' = ' + matrix_init(size, data, stack) + ';\n'
 }
 
 matrix_operation_dict = {
@@ -53,7 +53,7 @@ def get_matrix_dimensions(matrix: list):
         
     return matrix_dimensions
 
-def matrix_init(type_size, matrix_rep, garbage_collectable=False):
+def matrix_init(type_size, matrix_rep,array_stack, garbage_collectable=False):
     if matrix_rep is None or type_size is None:
         return
     if matrix_rep[0] != '{':
@@ -66,7 +66,7 @@ def matrix_init(type_size, matrix_rep, garbage_collectable=False):
     dim = '{' + ', '.join(dim) + '}'
     matrix_rep = list(matrix_rep)[1:-1]
     matrix_rep = '{' + ', '.join([char for char in matrix_rep if char not in ['{', '}', ',', ' ']]) + '}'
-    return MATRIX_INIT + ', '.join([DOUBLE_PTR + matrix_rep, INT_PTR + dim, str(dim_size), str(garbage_collectable).lower()]) + ')'
+    return MATRIX_INIT + ', '.join([array_stack.handle_request(DOUBLE_PTR, matrix_rep), array_stack.handle_request(INT_PTR, dim), str(dim_size), str(garbage_collectable).lower()]) + ')'
 
 def resolve_matrix_element_assignment(resolved_matrix_element,value, operator):
     return matrix_element_assignment_dict[operator](resolved_matrix_element, value)
@@ -74,14 +74,14 @@ def resolve_matrix_element_assignment(resolved_matrix_element,value, operator):
 def resolve_matrix_element_dereference(resolved_matrix_element):
     return MATRIX_ELEM_GET + resolved_matrix_element + ')'
 
-def resolve_matrix_assignment(symbol_table: symbol_table.SymbolTable, name, right_side, operator, type_size, garbage_collector: garbage_collector.GarbageCollector, indent):
+def resolve_matrix_assignment(symbol_table: symbol_table.SymbolTable, name, right_side, operator, type_size, garbage_collector: garbage_collector.GarbageCollector, indent, array_stack):
     if symbol_table.get(name) is None:
         symbol_table.put(name, type_size)
         if symbol_table.get(right_side) is not None:
             garbage_collector.add_reference(name, right_side)
         else:
             garbage_collector.init_reference(name)
-        right_side = matrix_init(type_size, right_side, garbage_collectable=True)
+        right_side = matrix_init(type_size, right_side,array_stack,garbage_collectable=True)
         return ' '.join([MATRIX_TYPE, name, operator, right_side]) + ';\n'
     else:
         if operator == '=':
@@ -93,10 +93,10 @@ def resolve_matrix_assignment(symbol_table: symbol_table.SymbolTable, name, righ
                 prefix_result = str()
             else:
                 prefix_result += '\t' * indent
-            return prefix_result + matrix_assignement_dict[operator](name, right_side, type_size)
-        return matrix_assignement_dict[operator](name, right_side, type_size)
+            return prefix_result + matrix_assignement_dict[operator](array_stack,name, right_side, type_size)
+        return matrix_assignement_dict[operator](array_stack, name, right_side, type_size)
 
-def resolve_matrix_operation(left_side,left_type, operator, right_side, right_type, garbage_collectable=False):
-    left_side = matrix_init(left_type, left_side)
-    right_side = matrix_init(right_type, right_side)
+def resolve_matrix_operation(left_side,left_type, operator, right_side, right_type,array_stack,garbage_collectable=False):
+    left_side = matrix_init(left_type, left_side, array_stack)
+    right_side = matrix_init(right_type, right_side, array_stack)
     return matrix_operation_dict[operator](garbage_collectable, left_side, right_side)
