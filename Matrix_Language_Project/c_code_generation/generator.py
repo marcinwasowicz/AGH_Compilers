@@ -12,12 +12,12 @@ from c_code_generation import garbage_collector
 
 class NodeVisitor(object):
     
-    def visit(self, node, indent: int):
+    def visit(self, node, indent: int, garbage_collectable=False):
         method_name = 'visit' + node.__class__.__name__
         visitor = getattr(self, method_name, self.generic_visit)
-        return visitor(node, indent)
+        return visitor(node, indent, garbage_collectable)
 
-    def generic_visit(self, node, indent: int):
+    def generic_visit(self, node, indent: int, garbage_collectable=False):
         generated_code = str()
         if isinstance(node, list):
             for child in node:
@@ -37,48 +37,48 @@ class CodeGenerator(NodeVisitor):
         self.type_checker = type_checker.TypeChecker(self.symbol_table)
         self.garbage_collector = garbage_collector.GarbageCollector()
 
-    def visitInteger(self, node: AST.Integer, indent):
+    def visitInteger(self, node: AST.Integer, indent, garbage_collectable=False):
         return node.value
 
-    def visitFloat(self, node: AST.Float, indent):
+    def visitFloat(self, node: AST.Float, indent, garbage_collectable=False):
         return node.value
 
-    def visitString(self, node: AST.String, indent):
+    def visitString(self, node: AST.String, indent, garbage_collectable=False):
         return f'{node.value}'
 
-    def visitVariable(self, node: AST.Variable, indent):
+    def visitVariable(self, node: AST.Variable, indent, garbage_collectable=False):
         return node.name
 
-    def visitUnaryVariable(self, node: AST.UnaryVariable, indent):
+    def visitUnaryVariable(self, node: AST.UnaryVariable, indent, garbage_collectable=False):
         return node.operator + self.visit(node.value, indent)
 
-    def visitMatrixInitializer(self, node: AST.MatrixInitializer, indent):
-        return mu.matrix_initializers_dict[node.keyword](int(self.visit(node.operation, indent)))
+    def visitMatrixInitializer(self, node: AST.MatrixInitializer, indent, garbage_collectable=False):
+        return mu.matrix_initializers_dict[node.keyword](int(self.visit(node.operation, indent)), garbage_collectable)
 
-    def visitSequence(self, node: AST.Sequence, indent):
+    def visitSequence(self, node: AST.Sequence, indent, garbage_collectable=False):
         result = str()
         for element in node.elements:
             result += self.visit(element, indent) + ', '
         return result[:-2]
 
-    def visitList(self, node: AST.List, indent):
+    def visitList(self, node: AST.List, indent, garbage_collectable=False):
         return '{' + self.visit(node.sequence, indent) + '}'
 
-    def visitMatrixElement(self, node: AST.MatrixElement, indent):
+    def visitMatrixElement(self, node: AST.MatrixElement, indent, garbage_collectable=False):
         dim = '{' + self.visit(node.indexing_sequence, indent) + '}'
         dim_size = str(len([self.visit(element, indent) for element in node.indexing_sequence.elements]))
         return mu.resolve_matrix_element_dereference(', '.join([self.visit(node.identifier, indent), mu.INT_PTR + dim, dim_size]))
 
-    def visitKeyWordInstruction(self, node: AST.KeyWordInstruction, indent):
+    def visitKeyWordInstruction(self, node: AST.KeyWordInstruction, indent, garbage_collectable=False):
         continuation = self.visit(node.continuation, indent) if node.continuation is not None else None
         continuation_type = self.type_checker.visit(node.continuation) if node.continuation is not None else None
         return gu.keyword_dict[node.keyword](continuation, continuation_type, indent)
     
-    def visitAssignment(self, node: AST.Assignment, indent):
+    def visitAssignment(self, node: AST.Assignment, indent, garbage_collectable=False):
         result = '\t' * indent
         right_type = self.type_checker.visit(node.operation)
         variable_name = node.lvalue.name if isinstance(node.lvalue, AST.Variable) else node.lvalue.identifier.name
-        right_side = self.visit(node.operation, indent)
+        right_side = self.visit(node.operation, indent, garbage_collectable=True)
         if isinstance(right_type, list):
             return result + mu.resolve_matrix_assignment(self.symbol_table, variable_name, right_side, node.operator,
             self.type_checker.visit(node.operation), self.garbage_collector, indent)
@@ -91,7 +91,7 @@ class CodeGenerator(NodeVisitor):
             result += variable_name
         return result + ' ' + node.operator + ' ' + right_side + ';\n' 
 
-    def visitOperation(self, node: AST.Operation, indent):
+    def visitOperation(self, node: AST.Operation, indent, garbage_collectable=False):
         if node is None:
             return
 
@@ -114,12 +114,12 @@ class CodeGenerator(NodeVisitor):
         if not isinstance(left_type, list) and not isinstance(right_type, list):
             return ' '.join([left_side, node.operator, right_side])
             
-        return mu.resolve_matrix_operation(left_side, left_type, node.operator, right_side, right_type)
+        return mu.resolve_matrix_operation(left_side, left_type, node.operator, right_side, right_type, garbage_collectable)
 
-    def visitCondition(self, node: AST.Condition, indent):
+    def visitCondition(self, node: AST.Condition, indent, garbage_collectable=False):
         return self.visit(node.left, indent) + ' ' + node.operator + ' ' + self.visit(node.right, indent)
 
-    def visitForLooping(self, node: AST.ForLooping, indent):
+    def visitForLooping(self, node: AST.ForLooping, indent, garbage_collectable=False):
         self.symbol_table.pushScope('for_looping')
         iterator = self.visit(node.iterator, indent)
         iter_type = self.type_checker.visit(node.start)
@@ -131,7 +131,7 @@ class CodeGenerator(NodeVisitor):
         self.symbol_table.popScope()
         return gu.for_loop_to_string(iterator, iter_type, start, end, body, indent)
 
-    def visitWhileLooping(self, node: AST.WhileLooping, indent):
+    def visitWhileLooping(self, node: AST.WhileLooping, indent, garbage_collectable=False):
         self.symbol_table.pushScope('while_looping')
         condition = self.visit(node.condition, indent)
         body = self.visit(node.body, indent + 1)
@@ -139,7 +139,7 @@ class CodeGenerator(NodeVisitor):
         self.symbol_table.popScope()
         return gu.while_loop_to_string(condition, body, indent)
 
-    def visitIfStatement(self, node: AST.IfStatement, indent):
+    def visitIfStatement(self, node: AST.IfStatement, indent, garbage_collectable=False):
         self.symbol_table.pushScope('if_statement')
         condition = self.visit(node.condition, indent)
         body = self.visit(node.body, indent + 1)
@@ -153,7 +153,7 @@ class CodeGenerator(NodeVisitor):
             self.symbol_table.popScope()
         return result
 
-    def visitActions(self, node: AST.Actions, indent):
+    def visitActions(self, node: AST.Actions, indent, garbage_collectable=False):
         return self.visit(node.series, indent)
 
     def generate(self, ast: AST.Node):

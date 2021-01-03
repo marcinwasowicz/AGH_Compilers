@@ -5,29 +5,30 @@ typedef struct{
     double* data;
     int* dim;
     int dim_size;
+    bool garbage_collectable;
 }matrix;
 
 matrix* alloc_matrix();
 
-matrix* init_matrix_list(double* data, int* dim, int dim_size);
+matrix* init_matrix_list(double* data, int* dim, int dim_size, bool garbage_collectable);
 
-matrix* add_elem_by_elem(matrix* a, matrix* b);
+matrix* add_elem_by_elem(matrix* a, matrix* b, bool garbage_collectable);
 
-matrix* sub_elem_by_elem(matrix* a, matrix* b);
+matrix* sub_elem_by_elem(matrix* a, matrix* b, bool garbage_collectable);
 
-matrix* mult_elem_by_elem(matrix* a, matrix* b);
+matrix* mult_elem_by_elem(matrix* a, matrix* b, bool garbage_collectable);
 
-matrix* div_elem_by_elem(matrix* a, matrix* b);
+matrix* div_elem_by_elem(matrix* a, matrix* b, bool garbage_collectable);
 
-matrix* mult(matrix* a, matrix* b);
+matrix* mult(matrix* a, matrix* b, bool garbage_collectable);
 
-matrix* transpose(matrix* a);
+matrix* transpose(matrix* a, bool garbage_collectable);
 
-matrix* zeros(int size);
+matrix* zeros(int size, bool garbage_collectable);
 
-matrix* ones(int size);
+matrix* ones(int size, bool garbage_collectable);
 
-matrix* eye(int size);
+matrix* eye(int size, bool garbage_collectable);
 
 double get_emlement(matrix* mat, int* dim, int dim_size);
 

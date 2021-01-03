@@ -22,18 +22,18 @@ matrix_assignement_dict = {
 }
 
 matrix_operation_dict = {
-    '.+': lambda left, right: 'add_elem_by_elem(' + left + ', ' + right + ')',
-    '.-': lambda left, right: 'sub_elem_by_elem(' + left + ', ' + right + ')',
-    '.*': lambda left, right: 'mult_elem_by_elem(' + left + ', ' + right + ')',
-    './': lambda left, right: 'div_elem_by_elem(' + left + ', ' + right + ')',
-    "'": lambda left, _: 'transpose(' + left + ')',
-    '*': lambda left, right: 'mult(' + left + ', ' + right + ')'
+    '.+': lambda garbage_collectable, left, right: 'add_elem_by_elem(' + left + ', ' + right + ', ' + str(garbage_collectable).lower() +')',
+    '.-': lambda garbage_collectable, left, right: 'sub_elem_by_elem(' + left + ', ' + right + ', ' + str(garbage_collectable).lower() +')',
+    '.*': lambda garbage_collectable, left, right: 'mult_elem_by_elem(' + left + ', ' + right + ', ' + str(garbage_collectable).lower() +')',
+    './': lambda garbage_collectable, left, right: 'div_elem_by_elem(' + left + ', ' + right + ', ' + str(garbage_collectable).lower() +')',
+    "'": lambda garbage_collectable, left, _: 'transpose(' + left + ', ' + str(garbage_collectable).lower() +')',
+    '*': lambda garbage_collectable, left, right: 'mult(' + left + ', ' + right + ', ' + str(garbage_collectable).lower() +')'
 }
 
 matrix_initializers_dict = {
-    'zeros': lambda size: 'zeros(' + str(size) +')',
-    'ones': lambda size: 'ones(' + str(size) +')',
-    'eye': lambda size: 'eye(' + str(size) +')'
+    'zeros': lambda size, garbage_collectable: 'zeros(' + str(size) + ', ' + str(garbage_collectable).lower() +')',
+    'ones': lambda size, garbage_collectable: 'ones(' + str(size) + ', ' + str(garbage_collectable).lower() +')',
+    'eye': lambda size, garbage_collectable: 'eye(' + str(size)+ ', ' + str(garbage_collectable).lower() +')'
 }
 
 matrix_element_assignment_dict = {
@@ -53,7 +53,7 @@ def get_matrix_dimensions(matrix: list):
         
     return matrix_dimensions
 
-def matrix_init(type_size, matrix_rep):
+def matrix_init(type_size, matrix_rep, garbage_collectable=False):
     if matrix_rep is None or type_size is None:
         return
     if matrix_rep[0] != '{':
@@ -66,7 +66,7 @@ def matrix_init(type_size, matrix_rep):
     dim = '{' + ', '.join(dim) + '}'
     matrix_rep = list(matrix_rep)[1:-1]
     matrix_rep = '{' + ', '.join([char for char in matrix_rep if char not in ['{', '}', ',', ' ']]) + '}'
-    return MATRIX_INIT + ', '.join([DOUBLE_PTR + matrix_rep, INT_PTR + dim, str(dim_size)]) + ')'
+    return MATRIX_INIT + ', '.join([DOUBLE_PTR + matrix_rep, INT_PTR + dim, str(dim_size), str(garbage_collectable).lower()]) + ')'
 
 def resolve_matrix_element_assignment(resolved_matrix_element,value, operator):
     return matrix_element_assignment_dict[operator](resolved_matrix_element, value)
@@ -81,7 +81,7 @@ def resolve_matrix_assignment(symbol_table: symbol_table.SymbolTable, name, righ
             garbage_collector.add_reference(name, right_side)
         else:
             garbage_collector.init_reference(name)
-        right_side = matrix_init(type_size, right_side)
+        right_side = matrix_init(type_size, right_side, garbage_collectable=True)
         return ' '.join([MATRIX_TYPE, name, operator, right_side]) + ';\n'
     else:
         if operator == '=':
@@ -96,7 +96,7 @@ def resolve_matrix_assignment(symbol_table: symbol_table.SymbolTable, name, righ
             return prefix_result + matrix_assignement_dict[operator](name, right_side, type_size)
         return matrix_assignement_dict[operator](name, right_side, type_size)
 
-def resolve_matrix_operation(left_side,left_type, operator, right_side, right_type):
+def resolve_matrix_operation(left_side,left_type, operator, right_side, right_type, garbage_collectable=False):
     left_side = matrix_init(left_type, left_side)
     right_side = matrix_init(right_type, right_side)
-    return matrix_operation_dict[operator](left_side, right_side)
+    return matrix_operation_dict[operator](garbage_collectable, left_side, right_side)
