@@ -13,7 +13,7 @@ types_dict = {
 
 print_dict = {
     AST.Integer.__name__: '%d',
-    AST.Float.__name__: '%f',
+    AST.Float.__name__: '%lf',
     AST.String.__name__: '%s'
 }
 
