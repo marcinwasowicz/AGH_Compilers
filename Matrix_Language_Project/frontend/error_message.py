@@ -80,4 +80,4 @@ class InvalidDereferencing(ErrorMessage):
         super().__init__(lineno)
 
     def __str__(self):
-        return "Matrix element dereference mus be done via named variable, occured at line: " + super().__str__()
+        return "Matrix element dereference must be done via named variable, occured at line: " + super().__str__()
