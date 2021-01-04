@@ -155,13 +155,43 @@ matrix* mult(matrix* a, matrix* b, bool garbage_collectable){}
 
 matrix* transpose(matrix* a, bool garbage_collectable){}
 
-matrix* zeros(int size, bool garbage_collectable){}
+matrix* zeros(int size, bool garbage_collectable){
+    matrix* mat = (matrix*) malloc(sizeof(matrix));
+    mat->garbage_collectable = garbage_collectable;
+    mat->dim_size = 2;
 
-matrix* ones(int size, bool garbage_collectable){}
+    mat->dim = (int*) malloc(sizeof(int) * mat->dim_size);
+    mat->dim[0] = size;
+    mat->dim[1] = size;
+
+    mat->data = (double*) malloc(sizeof(double) * size * size);
+    for(int i = 0; i<size * size; i++){
+        mat->data[i] = 0;
+    }
+
+    return mat;
+}
+
+matrix* ones(int size, bool garbage_collectable){
+    matrix* mat = (matrix*) malloc(sizeof(matrix));
+    mat->garbage_collectable = garbage_collectable;
+    mat->dim_size = 2;
+
+    mat->dim = (int*) malloc(sizeof(int) * mat->dim_size);
+    mat->dim[0] = size;
+    mat->dim[1] = size;
+
+    mat->data = (double*) malloc(sizeof(double) * size * size);
+    for(int i = 0; i<size * size; i++){
+        mat->data[i] = 1;
+    }
+
+    return mat;
+}
 
 matrix* eye(int size, bool garbage_collectable){}
 
-double get_emlement(matrix* mat, int* dim, int dim_size){
+double get_element(matrix* mat, int* dim, int dim_size){
     int index = dim[dim_size - 1];
     for(int i = dim_size - 2; i>= 0; i--){
         index += dim[i]*mat->dim[i];

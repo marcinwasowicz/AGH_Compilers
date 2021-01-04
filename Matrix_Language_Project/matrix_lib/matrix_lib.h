@@ -28,7 +28,7 @@ matrix* ones(int size, bool garbage_collectable);
 
 matrix* eye(int size, bool garbage_collectable);
 
-double get_emlement(matrix* mat, int* dim, int dim_size);
+double get_element(matrix* mat, int* dim, int dim_size);
 
 void set_element(matrix* mat, int* dim, int dim_size, double value);
 
