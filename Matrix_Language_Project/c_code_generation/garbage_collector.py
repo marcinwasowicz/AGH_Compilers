@@ -21,14 +21,16 @@ class GarbageCollector:
         group.add(name)
         self.variables[name] = group
 
-    def reassign_reference(self, name, ref):
+    def reassign_reference(self, name, ref, type_size, symbol_table: symbol_table.SymbolTable):
         remove_ret_val = self.remove_reference(name)
         self.add_reference(name, ref)
+        symbol_table.get(name).type_info = type_size
         return remove_ret_val
 
-    def reinit_reference(self, name):
+    def reinit_reference(self, name, type_size, symbol_table: symbol_table.SymbolTable):
         remove_ret_val = self.remove_reference(name)
         self.init_reference(name)
+        symbol_table.get(name).type_info = type_size
         return remove_ret_val
 
     def purify_curr_scope(self, curr_scope, indent):

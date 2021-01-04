@@ -80,7 +80,7 @@ class CodeGenerator(NodeVisitor):
         result = '\t' * indent
         right_type = self.type_checker.visit(node.operation)
         variable_name = node.lvalue.name if isinstance(node.lvalue, AST.Variable) else node.lvalue.identifier.name
-        right_side = self.visit(node.operation, indent, garbage_collectable=True)
+        right_side = self.visit(node.operation, indent, garbage_collectable=(node.operator=='='))
         if isinstance(right_type, list):
             return result + mu.resolve_matrix_assignment(self.symbol_table, variable_name, right_side, node.operator,
             self.type_checker.visit(node.operation), self.garbage_collector, indent, self.array_stack)
@@ -102,11 +102,6 @@ class CodeGenerator(NodeVisitor):
 
         left_type = self.type_checker.visit(node.left)
         right_type = self.type_checker.visit(node.right) if node.right is not None else None
-
-        if isinstance(node.left, AST.MatrixElement):
-            left_side = mu.resolve_matrix_element_dereference(left_side)
-        if isinstance(node.right, AST.MatrixElement):
-            right_side = mu.resolve_matrix_element_dereference(right_side)
 
         if isinstance(node.left, AST.Operation):
             left_side = '(' + left_side + ')'
