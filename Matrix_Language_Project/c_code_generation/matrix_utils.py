@@ -1,5 +1,6 @@
 import sys
 import os
+import re
 
 sys.path.insert(0, os.path.abspath('..'))
 
@@ -62,10 +63,9 @@ def matrix_init(type_size, matrix_rep,array_stack, garbage_collectable=False):
     while isinstance(type_size, list):
         dim.append(str(len(type_size)))
         type_size = type_size[0]
-        dim_size = len(dim)
+    dim_size = len(dim)
     dim = '{' + ', '.join(dim) + '}'
-    matrix_rep = list(matrix_rep)[1:-1]
-    matrix_rep = '{' + ', '.join([char for char in matrix_rep if char not in ['{', '}', ',', ' ']]) + '}'
+    matrix_rep = '{' + ', '.join([word for word in re.split('[}{, ]', matrix_rep) if word != str()]) + '}'
     return MATRIX_INIT + ', '.join([array_stack.handle_request(DOUBLE_PTR, matrix_rep), array_stack.handle_request(INT_PTR, dim), str(dim_size), str(garbage_collectable).lower()]) + ')'
 
 def resolve_matrix_element_assignment(resolved_matrix_element,value, operator):
