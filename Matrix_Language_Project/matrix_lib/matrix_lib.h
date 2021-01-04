@@ -8,8 +8,6 @@ typedef struct{
     bool garbage_collectable;
 }matrix;
 
-matrix* alloc_matrix();
-
 matrix* init_matrix_list(double* data, int* dim, int dim_size, bool garbage_collectable);
 
 matrix* add_elem_by_elem(matrix* a, matrix* b, bool garbage_collectable);
