@@ -75,6 +75,13 @@ class MatrixOperatorMisuse(ErrorMessage):
     def __str__(self):
         return "Operator reserved for matrices used with scalars: " + super().__str__()
 
+class ScalarOperatorMisuse(ErrorMessage):
+    def __init__(self, lineno):
+        super().__init__(lineno)
+
+    def __str__(self):
+        return "Operator reserved for scalars used with matrices: " + super().__str__()
+
 class InvalidDereferencing(ErrorMessage):
     def __init__(self, lineno):
         super().__init__(lineno)

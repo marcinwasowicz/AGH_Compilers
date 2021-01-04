@@ -33,7 +33,8 @@ class TypeChecker(NodeVisitor):
                 ('Float', 'Integer'): 'Float', 
             }
 
-        self.reserved_matrix_operators = ['.+', '-.', '.*', './', "'"]
+        self.reserved_matrix_operators = ['.+', '.-', '.*', './', "'"]
+        self.allowed_matrix_operators = ['.+', '.-', '.*', './', "'", '*', '*=', '+=', '-=', '/=']
 
     @staticmethod
     def _unpack_nested_list(nested_list, output):
@@ -64,6 +65,8 @@ class TypeChecker(NodeVisitor):
         return [AST.Float.__name__ in vector_side for _ in vector_side]
 
     def getListOperationType(self, left_side, right_side, operator, lineno):
+        if operator not in self.allowed_matrix_operators:
+            return error_message.ScalarOperatorMisuse(lineno)
         if right_side is None:
             return left_side
         if not isinstance(left_side[0], list) and not isinstance(right_side[0], list):
