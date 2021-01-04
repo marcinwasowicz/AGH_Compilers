@@ -40,8 +40,6 @@ void mult_elem_by_elem_store(matrix* a, matrix* b);
 
 void div_elem_by_elem_store(matrix* a, matrix* b);
 
-void store(matrix* a, matrix* b);
-
 void free_matrix(matrix* mat);
 
 void add_to_element(matrix* mat, int* dim, int dim_size, double value);
