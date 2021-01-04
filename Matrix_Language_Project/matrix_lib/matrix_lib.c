@@ -189,7 +189,26 @@ matrix* ones(int size, bool garbage_collectable){
     return mat;
 }
 
-matrix* eye(int size, bool garbage_collectable){}
+matrix* eye(int size, bool garbage_collectable){
+    matrix* mat = (matrix*) malloc(sizeof(matrix));
+    mat->garbage_collectable = garbage_collectable;
+    mat->dim_size = 2;
+
+    mat->dim = (int*) malloc(sizeof(int) * mat->dim_size);
+    mat->dim[0] = size;
+    mat->dim[1] = size;
+
+    mat->data = (double*) malloc(sizeof(double) * size * size);
+    for(int i = 0; i<size * size; i++){
+        mat->data[i] = 0;
+    }
+
+    for(int i = 0; i<size*size; i+= size + 1){
+        mat->data[i] = 1;
+    }
+
+    return mat;
+}
 
 double get_element(matrix* mat, int* dim, int dim_size){
     int index = dim[dim_size - 1];
