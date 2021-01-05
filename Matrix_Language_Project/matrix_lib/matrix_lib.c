@@ -167,7 +167,45 @@ void set_element(matrix* mat, int* dim, int dim_size, double value){
     mat->data[index] = value;
 }
 
-matrix* mult(matrix* a, matrix* b, bool garbage_collectable){}
+matrix* mult(matrix* a, matrix* b, bool garbage_collectable){
+    matrix* mat = (matrix*) malloc(sizeof(matrix));
+    mat->garbage_collectable = garbage_collectable;
+    mat->dim_size = 2;
+
+    mat->dim = (int*) malloc(sizeof(int) * mat->dim_size);
+    mat->dim[0] = a->dim[0];
+    mat->dim[1] = b->dim[1];
+
+    int data_size = mat->dim[0] * mat->dim[1];
+    mat->data = (double*) malloc(sizeof(double) * data_size);
+
+    for(int i = 0; i<mat->dim[0]; i++){
+        for(int j = 0; j<mat->dim[1]; j++){
+            double value = 0.0;
+            for(int k = 0; k<a->dim[1]; k++){
+                int idx_pair1[] = {i, k};
+                int idx_pair2[] = {k, j};
+
+                double val1 = get_element(a, idx_pair1, a->dim_size);
+                double val2 = get_element(b, idx_pair2, b->dim_size);
+
+                value += val1 * val2;
+            }
+            int idx_pair[] = {i, j};
+            set_element(mat, idx_pair, mat->dim_size, value);
+        }
+    }
+
+    if(!a->garbage_collectable){
+        free_matrix(a);
+    }
+
+    if(!b->garbage_collectable){
+        free_matrix(b);
+    }
+
+    return mat;
+}
 
 matrix* transpose(matrix* a, bool garbage_collectable){
     matrix* mat = (matrix*) malloc(sizeof(matrix));
