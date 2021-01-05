@@ -322,7 +322,7 @@ void free_matrix(matrix* mat){
 void add_to_element(matrix* mat, int* dim, int dim_size, double value){
     int index = dim[dim_size - 1];
     for(int i = dim_size - 2; i>= 0; i--){
-        index += dim[i]*mat->dim[i];
+        index += dim[i]*mat->dim[i + 1];
     }
     mat->data[index] += value;
 }
@@ -330,7 +330,7 @@ void add_to_element(matrix* mat, int* dim, int dim_size, double value){
 void sub_from_element(matrix* mat, int* dim, int dim_size, double value){
     int index = dim[dim_size - 1];
     for(int i = dim_size - 2; i>= 0; i--){
-        index += dim[i]*mat->dim[i];
+        index += dim[i]*mat->dim[i + 1];
     }
     mat->data[index] -= value;
 }
@@ -338,7 +338,7 @@ void sub_from_element(matrix* mat, int* dim, int dim_size, double value){
 void mult_element_by(matrix* mat, int* dim, int dim_size, double value){
     int index = dim[dim_size - 1];
     for(int i = dim_size - 2; i>= 0; i--){
-        index += dim[i]*mat->dim[i];
+        index += dim[i]*mat->dim[i + 1];
     }
     mat->data[index] *= value;
 }
@@ -346,7 +346,7 @@ void mult_element_by(matrix* mat, int* dim, int dim_size, double value){
 void div_element_by(matrix* mat, int* dim, int dim_size, double value){
     int index = dim[dim_size - 1];
     for(int i = dim_size - 2; i>= 0; i--){
-        index += dim[i]*mat->dim[i];
+        index += dim[i]*mat->dim[i + 1];
     }
     mat->data[index] /= value;
 }
