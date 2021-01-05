@@ -48,7 +48,16 @@ class TypeChecker(NodeVisitor):
     def _transpose_matrix(type_size, lineno):
         if not isinstance(type_size[0], list) or isinstance(type_size[0][0], list):
             return error_message.TransposeError(lineno)
-        return [[AST.Float.__name__ for _ in type_size[0]] for _ in type_size]
+        return [[AST.Float.__name__ for _ in type_size] for _ in type_size[0]]
+
+    @staticmethod
+    def _matrix_depth(matrix):
+        depth = 0
+        while isinstance(matrix, list):
+            depth +=1
+            matrix = matrix[0]
+
+        return depth
 
     def refactorList(self, list_type):
         if isinstance(list_type, list):
@@ -71,6 +80,8 @@ class TypeChecker(NodeVisitor):
         return [AST.Float.__name__ in vector_side for _ in vector_side]
 
     def getListOperationType(self, left_side, right_side, operator, lineno):
+        if TypeChecker._matrix_depth(left_side) > 2 and TypeChecker._matrix_depth(right_side) > 2 and operator == '*':
+            return error_message.MatrixMultiplicationError(lineno)
         if operator not in self.allowed_matrix_operators:
             return error_message.ScalarOperatorMisuse(lineno)
         if right_side is None:
@@ -81,10 +92,10 @@ class TypeChecker(NodeVisitor):
             return self.getVectorMatrixOperationType(right_side, left_side, operator, lineno)
         if not isinstance(right_side[0], list):
             return self.getVectorMatrixOperationType(left_side, right_side, operator, lineno)
-        if operator in ['*', '*=']:
+        if operator in ['*']:
             if len(left_side[0]) != len(right_side):
                 return error_message.TypeMismatch(lineno)
-            return [[AST.Float.__name__ for _ in right_side[0]] for _ in left_side[0]]
+            return [[AST.Float.__name__ for _ in right_side[0]] for _ in left_side]
         if len(left_side) != len(right_side) or len(left_side[0]) != len(right_side[0]):
             return error_message.TypeMismatch(lineno)
         return [[AST.Float.__name__ for _ in right_side[0]] for _ in right_side]

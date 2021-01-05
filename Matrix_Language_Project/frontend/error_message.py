@@ -94,4 +94,12 @@ class TransposeError(ErrorMessage):
         super().__init__(lineno)
 
     def __str__(self):
-        return "Transposition is only allowed for two dimensional matrices, error occured at line: " + super().__str__()
+        return "Transposition is only supported for two dimensional matrices, error occured at line: " + super().__str__()
+
+class MatrixMultiplicationError(ErrorMessage):
+    def __init__(self, lineno):
+        super().__init__(lineno)
+
+    def __str__(self):
+        return "Matrix multiplication is only allowed for two dimensional matrices, error occured at line: " + super().__str__()
+        
