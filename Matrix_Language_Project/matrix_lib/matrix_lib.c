@@ -151,9 +151,52 @@ matrix* div_elem_by_elem(matrix* a, matrix* b, bool garbage_collectable){
     return mat;
 }
 
+double get_element(matrix* mat, int* dim, int dim_size){
+    int index = dim[dim_size - 1];
+    for(int i = dim_size - 2; i>= 0; i--){
+        index += dim[i]*mat->dim[i + 1];
+    }
+    return mat->data[index];
+}
+
+void set_element(matrix* mat, int* dim, int dim_size, double value){
+    int index = dim[dim_size - 1];
+    for(int i = dim_size - 2; i>= 0; i--){
+        index += dim[i]*mat->dim[i + 1];
+    }
+    mat->data[index] = value;
+}
+
 matrix* mult(matrix* a, matrix* b, bool garbage_collectable){}
 
-matrix* transpose(matrix* a, bool garbage_collectable){}
+matrix* transpose(matrix* a, bool garbage_collectable){
+    matrix* mat = (matrix*) malloc(sizeof(matrix));
+    mat->garbage_collectable = garbage_collectable;
+    mat->dim_size = a->dim_size;
+
+    mat->dim = (int*) malloc(sizeof(int) * mat->dim_size);
+    mat->dim[0] = a->dim[1];
+    mat->dim[1] = a->dim[0];
+
+    int data_size = mat->dim[0] * mat->dim[1];
+    mat->data = (double*) malloc(sizeof(double) * data_size);
+
+    for(int i = 0; i<a->dim[0]; i++){
+        for(int j = 0; j<a->dim[1]; j++){
+            int idx_pair1[] = {i, j};
+            int idx_pair2[] = {j, i};
+
+            double value = get_element(a, idx_pair1, a->dim_size);
+            set_element(mat, idx_pair2, mat->dim_size, value);
+        }
+    }
+
+    if(!a->garbage_collectable){
+        free_matrix(a);
+    }
+
+    return mat;
+}
 
 matrix* zeros(int size, bool garbage_collectable){
     matrix* mat = (matrix*) malloc(sizeof(matrix));
@@ -210,22 +253,6 @@ matrix* eye(int size, bool garbage_collectable){
     return mat;
 }
 
-double get_element(matrix* mat, int* dim, int dim_size){
-    int index = dim[dim_size - 1];
-    for(int i = dim_size - 2; i>= 0; i--){
-        index += dim[i]*mat->dim[i];
-    }
-    return mat->data[index];
-}
-
-void set_element(matrix* mat, int* dim, int dim_size, double value){
-    int index = dim[dim_size - 1];
-    for(int i = dim_size - 2; i>= 0; i--){
-        index += dim[i]*mat->dim[i];
-    }
-    mat->data[index] = value;
-}
-
 void add_elem_by_elem_store(matrix* a, matrix* b){
     int data_size = 1;
     for(int i = 0; i<a->dim_size; i++){
@@ -248,7 +275,7 @@ void sub_elem_by_elem_store(matrix* a, matrix* b){
     }
 
     for(int i = 0; i<data_size; i++){
-        a->data[i] += b->data[i];
+        a->data[i] -= b->data[i];
     }
 
     if(!b->garbage_collectable){
@@ -263,7 +290,7 @@ void mult_elem_by_elem_store(matrix* a, matrix* b){
     }
 
     for(int i = 0; i<data_size; i++){
-        a->data[i] += b->data[i];
+        a->data[i] *= b->data[i];
     }
 
     if(!b->garbage_collectable){
@@ -278,7 +305,7 @@ void div_elem_by_elem_store(matrix* a, matrix* b){
     }
 
     for(int i = 0; i<data_size; i++){
-        a->data[i] += b->data[i];
+        a->data[i] /= b->data[i];
     }
 
     if(!b->garbage_collectable){

@@ -18,6 +18,10 @@ matrix* mult_elem_by_elem(matrix* a, matrix* b, bool garbage_collectable);
 
 matrix* div_elem_by_elem(matrix* a, matrix* b, bool garbage_collectable);
 
+double get_element(matrix* mat, int* dim, int dim_size);
+
+void set_element(matrix* mat, int* dim, int dim_size, double value);
+
 matrix* mult(matrix* a, matrix* b, bool garbage_collectable);
 
 matrix* transpose(matrix* a, bool garbage_collectable);
@@ -27,10 +31,6 @@ matrix* zeros(int size, bool garbage_collectable);
 matrix* ones(int size, bool garbage_collectable);
 
 matrix* eye(int size, bool garbage_collectable);
-
-double get_element(matrix* mat, int* dim, int dim_size);
-
-void set_element(matrix* mat, int* dim, int dim_size, double value);
 
 void add_elem_by_elem_store(matrix* a, matrix* b);
 
