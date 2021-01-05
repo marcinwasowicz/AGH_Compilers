@@ -85,6 +85,7 @@ def resolve_matrix_assignment(symbol_table: symbol_table.SymbolTable, name, righ
         return ' '.join([MATRIX_TYPE, name, operator, right_side]) + ';\n'
     else:
         if operator == '=':
+            symbol_table.put(name, type_size)
             if symbol_table.get(right_side) is not None:
                 prefix_result = garbage_collector.reassign_reference(name, right_side, type_size, symbol_table)
             else:
