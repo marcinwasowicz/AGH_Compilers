@@ -88,3 +88,10 @@ class InvalidDereferencing(ErrorMessage):
 
     def __str__(self):
         return "Matrix element dereference must be done via named variable, occured at line: " + super().__str__()
+
+class TransposeError(ErrorMessage):
+    def __init__(self, lineno):
+        super().__init__(lineno)
+
+    def __str__(self):
+        return "Transposition is only allowed for two dimensional matrices, error occured at line: " + super().__str__()

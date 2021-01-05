@@ -44,6 +44,12 @@ class TypeChecker(NodeVisitor):
             else: 
                 output.append(i)
 
+    @staticmethod
+    def _transpose_matrix(type_size, lineno):
+        if not isinstance(type_size[0], list) or isinstance(type_size[0][0], list):
+            return error_message.TransposeError(lineno)
+        return [[AST.Float.__name__ for _ in type_size[0]] for _ in type_size]
+
     def refactorList(self, list_type):
         if isinstance(list_type, list):
             for inner_list in list_type:
@@ -68,7 +74,7 @@ class TypeChecker(NodeVisitor):
         if operator not in self.allowed_matrix_operators:
             return error_message.ScalarOperatorMisuse(lineno)
         if right_side is None:
-            return left_side
+            return TypeChecker._transpose_matrix(left_side, lineno)
         if not isinstance(left_side[0], list) and not isinstance(right_side[0], list):
             return self.getVectorVectorOperationType(left_side, right_side, operator, lineno)
         if not isinstance(left_side[0], list):
