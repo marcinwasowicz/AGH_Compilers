@@ -16,6 +16,7 @@ if __name__ == '__main__':
     if errors:
         for error in errors:
             print(error)
+        sys.exit("Compilation failed with: " + str(len(errors)) + " errors")
     else:
         code_generator = generator.CodeGenerator()
         c_code = code_generator.generate(ast)
