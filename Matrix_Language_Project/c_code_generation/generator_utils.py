@@ -32,6 +32,9 @@ libraries = [
     '#include "matrix_lib.h"'
 ]
 
+def resolve_printf(continuation, cont_type, indent):
+   # todo implement matrix printing!
+   pass
 
 def for_loop_to_string(iterator, iter_type, start, end, body, indent):
     result = '\t' * indent + 'for(' + types_dict[iter_type] + ' ' + iterator +  ' = ' + start + '; '
