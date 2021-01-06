@@ -8,8 +8,7 @@ tokens = [
     'ADD', 'SUB', 'MULT', 'DIV',
     'BRACKET', 'CLOSE_BRACKET', 'CURL_BRACKET', 'CLOSE_CURL_BRACKET', 'SQ_BRACKET', 'CLOSE_SQ_BRACKET',
     'TRANSPOSE', 'RANGE', 'SEPARATOR', 'COMA',
-    'ID','FLOAT', 'INTEGER', 'STRING',
-    'COMMENT'
+    'ID','FLOAT', 'INTEGER', 'STRING'
 ]
 
 reserved = {
