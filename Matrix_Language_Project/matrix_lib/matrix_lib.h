@@ -50,4 +50,8 @@ void mult_element_by(matrix* mat, int* dim, int dim_size, double value);
 
 void div_element_by(matrix* mat, int* dim, int dim_size, double value);
 
+void printf_matrix_internal(matrix* mat, int dim_itr, int idx);
+
+void printf_matrix(matrix* mat);
+
 #endif

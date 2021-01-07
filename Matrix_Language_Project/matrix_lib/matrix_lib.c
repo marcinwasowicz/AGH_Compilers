@@ -389,5 +389,24 @@ void div_element_by(matrix* mat, int* dim, int dim_size, double value){
     mat->data[index] /= value;
 }
 
+void printf_matrix_internal(matrix* mat, int dim_itr, int idx){
+    printf("%s ", "[");
+    for(int i = 0; i<mat->dim[dim_itr]; i++){
+        if(dim_itr == mat->dim_size - 1){
+            printf("%lf ", mat->data[idx + i]);
+        }
+        else{
+            printf_matrix_internal(mat, dim_itr + 1, idx + i * mat->dim[dim_itr]);
+        }
+    }
+    printf("%s\n", "]");
 
+}
 
+void printf_matrix(matrix* mat){
+    printf_matrix_internal(mat, 0, 0);
+
+    if(!mat->garbage_collectable){
+        free_matrix(mat);
+    }
+}
