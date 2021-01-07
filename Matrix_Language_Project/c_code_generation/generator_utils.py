@@ -22,7 +22,8 @@ keyword_dict = {
     'continue': lambda continuation, cont_type, indent: '\t' * indent + 'continue' + ';\n',
     'return': lambda continuation,  cont_type, indent: '\t' * indent + 'return ' + continuation + ';\n',
     'print': lambda continuation, cont_type, indent: '\t' * indent + 
-        'printf(' + '"' + " ".join([print_dict[elem] for elem in cont_type ]) + '\\n"' + ', ' +  continuation + ');\n'
+        'printf(' + '"' + " ".join([print_dict[elem] for elem in cont_type ]) + '\\n"' + ', ' +  continuation + ');\n',
+    'print_matrix': lambda continuation, cont_type, indent: '\t' * indent + 'printf_matrix(' + continuation + ');\n'
 }
 
 libraries = [
