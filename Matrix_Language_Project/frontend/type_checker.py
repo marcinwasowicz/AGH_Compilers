@@ -167,13 +167,22 @@ class TypeChecker(NodeVisitor):
             return error_message.KeyWordInstructionOutOfScope(node.lineno)
         if node.keyword == 'print':
             errors = self.visit(node.continuation)
-            errors = [error for error in errors if error is not None and not isinstance(error, str)]
+            if len([error for error in errors if isinstance(error, list)]) :
+                errors.append(error_message.MatrixInPrint(node.lineno))
+            errors = [error for error in errors if error is not None and not isinstance(error, str) and not isinstance(error, list)]
             if errors != []:
                 return errors
         if node.keyword == 'return':
             operation_type = self.visit(node.continuation)
             if isinstance(operation_type.__class__, error_message.ErrorMessage):
                 return operation_type
+        if node.keyword == 'print_matrix':
+            operation_type = self.visit(node.continuation)
+            if isinstance(operation_type.__class__, error_message.ErrorMessage):
+                return operation_type
+
+            if not isinstance(operation_type, list):
+                return error_message.InvalidPrintMatrixArgument(node.lineno)
 
     def visitAssignment(self, node: AST.Assignment):
         operation_type = self.visit(node.operation)

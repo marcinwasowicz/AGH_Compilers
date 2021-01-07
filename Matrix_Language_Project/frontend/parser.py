@@ -35,10 +35,21 @@ def p_action_evolution(p):
 
 def p_action_evolution_keyword_instruction(p):
     '''action : PRINT sequence SEPARATOR
+              | PRINT_MATRIX list SEPARATOR
               | CONTINUE SEPARATOR
               | BREAK SEPARATOR
               | RETURN operation SEPARATOR'''
     p[0] = AST.KeyWordInstruction(keyword=p[1], continuation=p[2] if len(p) > 3 else None, lineno=p.lineno(1))
+
+def p_action_evolution_keyword_instruction_print_matrix_initialization(p):
+    '''action : PRINT_MATRIX ZEROS BRACKET operation CLOSE_BRACKET SEPARATOR
+              | PRINT_MATRIX EYE BRACKET operation CLOSE_BRACKET SEPARATOR
+              | PRINT_MATRIX ONES BRACKET operation CLOSE_BRACKET SEPARATOR'''
+    p[0] = AST.KeyWordInstruction(keyword=p[1], continuation=AST.MatrixInitializer(keyword=p[2], operation=p[4], lineno=p.lineno(1)), lineno=p.lineno(1))
+
+def p_action_evolution_keyword_instruction_print_matrix_identifier(p):
+    '''action : PRINT_MATRIX ID SEPARATOR'''
+    p[0] = AST.KeyWordInstruction(keyword=p[1], continuation=AST.Variable(name=p[2], lineno=p.lineno(1)), lineno=p.lineno(1))
 
 def p_assignement_evolution(p):
     '''assignement : lvalue ASSIGN operation

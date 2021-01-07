@@ -22,7 +22,8 @@ reserved = {
     'ones': 'ONES',
     'while': 'WHILE',
     'print': 'PRINT',
-    'for': 'FOR'
+    'print_matrix': 'PRINT_MATRIX',
+    'for': 'FOR',
 }
 
 tokens += list(reserved.values())

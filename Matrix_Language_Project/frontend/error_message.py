@@ -102,4 +102,17 @@ class MatrixMultiplicationError(ErrorMessage):
 
     def __str__(self):
         return "Matrix multiplication is only allowed for two dimensional matrices, error occured at line: " + super().__str__()
-        
+
+class MatrixInPrint(ErrorMessage):
+    def __init__(self, lineno):
+        super().__init__(lineno)
+
+    def __str__(self):
+        return "Matrix objects cannot be printed using print function. Use print_matrix. Error occured at line: " + super().__str__()
+
+class InvalidPrintMatrixArgument(ErrorMessage):
+    def __init__(self, lineno):
+        super().__init__(lineno)
+    
+    def __str__(self):
+        return "Non matrix object used as print_matrix argument at line: " + super().__str__()
